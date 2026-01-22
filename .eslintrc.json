@@ -21,6 +21,19 @@
     "rules": {
         "prettier/prettier": "error",
         "indent": ["error", 4],
-        "comma-dangle": ["error", "always-multiline"]
+        "comma-dangle": ["error", "always-multiline"],
+        "react-refresh/only-export-components": [
+            "warn",
+            { "allowConstantExport": true }
+        ],
+        "no-console": ["error", { "allow": ["warn", "error"] }],
+        "react/jsx-key": "error",
+        "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0, "maxBOF": 0 }],
+        "eqeqeq": ["error", "always"],
+        "default-case": "error",
+        "dot-notation": "error",
+        "camelcase": ["error", { "properties": "always" }],
+        "semi": "error",
+        "prefer-const": "error"
     }
 }
