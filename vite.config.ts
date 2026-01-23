@@ -1,7 +1,7 @@
 import preact from "@preact/preset-vite";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     plugins: [
@@ -13,5 +13,9 @@ export default defineConfig({
     ],
     server: {
         hmr: true,
+    },
+    test: {
+        globals: true,
+        environment: "jsdom",
     },
 });
