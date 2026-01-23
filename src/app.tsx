@@ -1,9 +1,10 @@
 import "./app.css";
+import { Button } from "./components/ui/button";
 
 export function App() {
     return (
         <>
-            <button class="btn btn-primary">Button</button>
+            <Button>Click Me</Button>
         </>
     );
 }

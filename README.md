@@ -10,6 +10,6 @@ This project is a metronome application built using modern web technologies. It 
 - **ESLint**: For maintaining code quality.
 - **Prettier**: For consistent code formatting.
 - **Tailwind CSS**: For utility-first styling.
-- **daisyUI**: For pre-designed UI components.
+- **Shadcn**: For pre-designed UI components.
 
 Stay tuned for updates as the project evolves!
