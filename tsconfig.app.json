@@ -8,8 +8,8 @@
         "types": ["vite/client"],
         "skipLibCheck": true,
         "paths": {
-            "react": ["./node_modules/preact/compat/"],
-            "react-dom": ["./node_modules/preact/compat/"],
+            "react": ["./node_modules/react/compat/"],
+            "react-dom": ["./node_modules/react/compat/"],
             "@/*": ["./src/*"]
         },
         /* Bundler mode */
@@ -19,7 +19,7 @@
         "moduleDetection": "force",
         "noEmit": true,
         "jsx": "react-jsx",
-        "jsxImportSource": "preact",
+        "jsxImportSource": "react",
         /* Linting */
         "strict": true,
         "noUnusedLocals": true,

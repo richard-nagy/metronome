@@ -12,17 +12,17 @@
         "baseUrl": ".",
         "paths": {
             "react": [
-                "./node_modules/preact/compat"
+                "./node_modules/react/compat"
             ],
             "react-dom": [
-                "./node_modules/preact/compat"
+                "./node_modules/react/compat"
             ],
             "@/*": [
                 "./src/*"
             ],
             "@radix-ui/react-slot": [
-                "./node_modules/@bosh-code/preact-slot"
+                "./node_modules/@bosh-code/react-slot"
             ]
-        }
+        },
     }
 }

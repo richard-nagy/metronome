@@ -4,7 +4,7 @@ This project is a metronome application built using modern web technologies. It 
 
 ## Technologies Used
 
-- **Preact**: For building the user interface (lightweight alternative to React).
+- **React**: For building the user interface (lightweight alternative to React).
 - **TypeScript**: For type-safe JavaScript development.
 - **Vite**: For fast and efficient development and build tooling.
 - **ESLint**: For maintaining code quality.

@@ -1,13 +1,13 @@
-import preact from "@preact/preset-vite";
 import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
 import path from "path";
 import checker from "vite-plugin-checker";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     plugins: [
+        react(),
         tailwindcss(),
-        preact(),
         checker({
             typescript: true,
         }),
@@ -21,10 +21,6 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            react: "preact/compat",
-            "react-dom": "preact/compat",
-            "react/jsx-runtime": "preact/jsx-runtime",
-            "@radix-ui/react-slot": "@bosh-code/preact-slot",
             "@": path.resolve(__dirname, "./src"),
         },
     },
