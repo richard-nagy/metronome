@@ -7,9 +7,10 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Theme } from "@/lib/types";
 import { Moon, Sun } from "lucide-react";
 import { useState } from "react";
-import { Theme, useTheme } from "./ui/theme-provider";
+import { useTheme } from "./ui/themeHook";
 
 export function ThemeToggle() {
     const { setTheme } = useTheme();
