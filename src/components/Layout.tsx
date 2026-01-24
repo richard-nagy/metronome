@@ -58,6 +58,7 @@ export default function Layout() {
                     fillColor={color}
                     className="w-100"
                     onValueChange={(value) => setSpeed(value[0] ?? minValue)}
+                    onDoubleClick={() => setSpeed(defaultValue)}
                 />
                 <div className="flex flex-row gap-3">
                     <Button
