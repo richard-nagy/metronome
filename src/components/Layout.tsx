@@ -1,5 +1,6 @@
 import { getColorFromRange } from "@/lib/utils";
 import { useCallback, useMemo, useState } from "react";
+import BeatCounter from "./BeatCounter";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -10,17 +11,16 @@ const minValue = 40;
 const defaultValue = 120;
 
 export default function Layout() {
-    const [speed, setSpeed] = useState(defaultValue);
+    const [bpm, setBpm] = useState(defaultValue);
 
     const color = useMemo(
-        () => getColorFromRange(speed, minValue, maxValue),
-        [speed],
+        () => getColorFromRange(bpm, minValue, maxValue),
+        [bpm],
     );
 
     const onButtonChange = useCallback((value: number) => {
-        setSpeed((oldSpeed) => {
-            const result = oldSpeed + value;
-
+        setBpm((oldBpm) => {
+            const result = oldBpm + value;
             if (result <= minValue) {
                 return minValue;
             } else if (result >= maxValue) {
@@ -32,14 +32,14 @@ export default function Layout() {
     }, []);
 
     const onInputBlur = useCallback(() => {
-        setSpeed((oldSpeed) => {
-            if (oldSpeed <= minValue) {
+        setBpm((oldBpm) => {
+            if (oldBpm <= minValue) {
                 return minValue;
-            } else if (oldSpeed >= maxValue) {
+            } else if (oldBpm >= maxValue) {
                 return maxValue;
             }
 
-            return oldSpeed;
+            return oldBpm;
         });
     }, []);
 
@@ -49,16 +49,17 @@ export default function Layout() {
                 <ThemeToggle />
             </header>
             <main className="flex flex-1 flex-col gap-5 items-center justify-center min-w-100">
+                <BeatCounter color={color} bpm={bpm} />
                 <Slider
                     defaultValue={[defaultValue]}
-                    value={[speed]}
+                    value={[bpm]}
                     min={minValue}
                     max={maxValue}
                     step={1}
                     fillColor={color}
                     className="w-100"
-                    onValueChange={(value) => setSpeed(value[0] ?? minValue)}
-                    onDoubleClick={() => setSpeed(defaultValue)}
+                    onValueChange={(value) => setBpm(value[0] ?? minValue)}
+                    onDoubleClick={() => setBpm(defaultValue)}
                 />
                 <div className="flex flex-row gap-3">
                     <Button
@@ -74,13 +75,13 @@ export default function Layout() {
                         -1
                     </Button>
                     <Input
-                        value={speed}
+                        value={bpm}
                         min={minValue}
                         max={maxValue}
                         type="number"
                         className="h-10 w-18 text-center"
                         style={{ color: color }}
-                        onChange={(e) => setSpeed(parseInt(e.target.value))}
+                        onChange={(e) => setBpm(parseInt(e.target.value))}
                         onBlur={onInputBlur}
                     />
                     <Button
