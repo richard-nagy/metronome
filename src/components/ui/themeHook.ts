@@ -1,4 +1,4 @@
-import { Theme } from "@/lib/types";
+import { Theme } from "@/types/types";
 import { createContext, useContext } from "react";
 
 type ThemeProviderState = {

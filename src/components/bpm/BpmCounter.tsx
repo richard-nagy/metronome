@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 const msPerMinute = 60000;
 const beatCounter = 4;
 
-interface BeatCounterProps {
+interface BpmCounterProps {
     color: string;
     bpm: number;
 }
-const BeatCounter = ({ color, bpm }: BeatCounterProps) => {
+const BpmCounter = ({ color, bpm }: BpmCounterProps) => {
     const [isRunning, setIsRunning] = useState(false);
     const [currentBeat, setCurrentBeat] = useState(0);
     const [muted, setMuted] = useState(false);
@@ -87,4 +87,4 @@ const BeatCounter = ({ color, bpm }: BeatCounterProps) => {
     );
 };
 
-export default BeatCounter;
+export default BpmCounter;

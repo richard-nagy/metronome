@@ -10,10 +10,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
     { ignores: ["dist"] },
     {
-        extends: [
-            js.configs.recommended,
-            ...tseslint.configs.recommended,
-        ],
+        extends: [js.configs.recommended, ...tseslint.configs.recommended],
         files: ["**/*.{ts,tsx}"],
         languageOptions: {
             ecmaVersion: 2021,
@@ -23,9 +20,9 @@ export default tseslint.config(
             },
         },
         plugins: {
-            "react": reactPlugin,
+            react: reactPlugin,
             "react-refresh": reactRefresh,
-            "prettier": prettierPlugin,
+            prettier: prettierPlugin,
             "react-hooks": reactHooks,
         },
         rules: {
@@ -35,15 +32,18 @@ export default tseslint.config(
             "react-hooks/exhaustive-deps": "warn",
             "prettier/prettier": "error",
             "react/react-in-jsx-scope": "off",
-            "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+            "react-refresh/only-export-components": [
+                "warn",
+                { allowConstantExport: true },
+            ],
             "no-console": ["error", { allow: ["warn", "error"] }],
-            "eqeqeq": ["error", "always"],
+            eqeqeq: ["error", "always"],
             "prefer-const": "error",
-            "semi": ["error", "always"],
-            "camelcase": ["error", { properties: "always" }],
+            semi: ["error", "always"],
+            camelcase: ["error", { properties: "always" }],
         },
         settings: {
             react: { version: "detect" },
         },
-    }
+    },
 );
