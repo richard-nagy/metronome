@@ -7,18 +7,36 @@ const beatCounter = 4;
 interface BpmCounterProps {
     color: string;
     bpm: number;
+    isRunning: boolean;
+    currentBeat: number;
+    setIsRunning: (isRunning: boolean) => void;
+    setCurrentBeat: (beat: number) => void;
 }
-const BpmCounter = ({ color, bpm }: BpmCounterProps) => {
-    const [isRunning, setIsRunning] = useState(false);
-    const [currentBeat, setCurrentBeat] = useState(0);
+const BpmCounter = ({
+    color,
+    bpm,
+    isRunning,
+    currentBeat: parentCurrentBeat,
+    setIsRunning,
+    setCurrentBeat,
+}: BpmCounterProps) => {
     const [muted, setMuted] = useState(false);
+    const [currentBeat, setLocalCurrentBeat] = useState(parentCurrentBeat);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
+        setLocalCurrentBeat(parentCurrentBeat);
+    }, [parentCurrentBeat]);
+
+    useEffect(() => {
+        setCurrentBeat(currentBeat);
+    }, [currentBeat, setCurrentBeat]);
+
+    useEffect(() => {
         if (isRunning) {
             intervalRef.current = setInterval(() => {
-                setCurrentBeat((prev) => (prev + 1) % beatCounter);
+                setLocalCurrentBeat((prev) => (prev + 1) % beatCounter);
             }, msPerMinute / bpm);
         } else if (intervalRef.current) {
             clearInterval(intervalRef.current);
@@ -63,7 +81,7 @@ const BpmCounter = ({ color, bpm }: BpmCounterProps) => {
             <div className="flex flex-row gap-3 mt-3">
                 <Button
                     onClick={() => {
-                        setCurrentBeat(0);
+                        setLocalCurrentBeat(0);
                         setIsRunning(true);
                     }}
                     disabled={isRunning}
@@ -76,7 +94,10 @@ const BpmCounter = ({ color, bpm }: BpmCounterProps) => {
                 >
                     Stop
                 </Button>
-                <Button onClick={() => setCurrentBeat(0)} disabled={isRunning}>
+                <Button
+                    onClick={() => setLocalCurrentBeat(0)}
+                    disabled={isRunning}
+                >
                     Reset
                 </Button>
                 <Button onClick={() => setMuted((m) => !m)}>

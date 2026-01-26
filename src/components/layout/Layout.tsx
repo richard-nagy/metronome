@@ -9,6 +9,8 @@ const defaultValue = 120;
 
 export default function Layout() {
     const [bpm, setBpm] = useState(defaultValue);
+    const [isRunning, setIsRunning] = useState(false);
+    const [currentBeat, setCurrentBeat] = useState(0);
 
     const color = useMemo(
         () => getColorFromRange(bpm, minValue, maxValue),
@@ -52,9 +54,13 @@ export default function Layout() {
                 minValue={minValue}
                 maxValue={maxValue}
                 defaultValue={defaultValue}
+                isRunning={isRunning}
+                currentBeat={currentBeat}
                 onButtonChange={onButtonChange}
                 onInputChange={onInputChange}
                 onInputBlur={onInputBlur}
+                setIsRunning={setIsRunning}
+                setCurrentBeat={setCurrentBeat}
             />
         </div>
     );

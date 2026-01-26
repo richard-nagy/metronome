@@ -121,3 +121,24 @@
         @apply bg-background text-foreground;
     }
 }
+
+@keyframes pulsate-bck {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulsate-bck {
+    animation: pulsate-bck var(--pulse-duration, 0.2s) ease-in-out 1 both;
+    animation-play-state: running;
+}
+
+.paused {
+    animation-play-state: paused !important;
+}
