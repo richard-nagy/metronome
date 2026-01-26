@@ -1,7 +1,10 @@
 import { getColorFromRange } from "@/helpers/utils";
 import { useCallback, useMemo, useState } from "react";
-import Header from "./LayoutHeader";
-import MainContent from "./LayoutMainContent";
+import BpmControls from "../bpm/BpmControls";
+import BpmCounter from "../bpm/BpmCounter";
+import BpmPulse from "../bpm/BpmPulse";
+import BpmSlider from "../bpm/BpmSlider";
+import { ThemeToggle } from "../ThemeToggle";
 
 const maxValue = 300;
 const minValue = 40;
@@ -46,22 +49,43 @@ export default function Layout() {
 
     return (
         <div className="flex min-h-screen flex-col">
-            <Header />
-            <MainContent
-                bpm={bpm}
-                setBpm={setBpm}
-                color={color}
-                minValue={minValue}
-                maxValue={maxValue}
-                defaultValue={defaultValue}
-                isRunning={isRunning}
-                currentBeat={currentBeat}
-                onButtonChange={onButtonChange}
-                onInputChange={onInputChange}
-                onInputBlur={onInputBlur}
-                setIsRunning={setIsRunning}
-                setCurrentBeat={setCurrentBeat}
-            />
+            <header className="sticky top-0 z-50 p-2 ml-auto">
+                <ThemeToggle />
+            </header>
+            <main className="flex flex-1 flex-col gap-5 items-center justify-center min-w-100">
+                <BpmPulse
+                    isRunning={isRunning}
+                    color={color}
+                    bpm={bpm}
+                    currentBeat={currentBeat}
+                />
+                <BpmCounter
+                    color={color}
+                    bpm={bpm}
+                    isRunning={isRunning}
+                    currentBeat={currentBeat}
+                    setIsRunning={setIsRunning}
+                    setCurrentBeat={setCurrentBeat}
+                />
+                <BpmSlider
+                    bpm={bpm}
+                    min={minValue}
+                    max={maxValue}
+                    defaultValue={defaultValue}
+                    color={color}
+                    onChange={setBpm}
+                    onDoubleClick={() => setBpm(defaultValue)}
+                />
+                <BpmControls
+                    bpm={bpm}
+                    min={minValue}
+                    max={maxValue}
+                    color={color}
+                    onButtonChange={onButtonChange}
+                    onInputChange={onInputChange}
+                    onInputBlur={onInputBlur}
+                />
+            </main>
         </div>
     );
 }
