@@ -11,7 +11,9 @@ interface BeatCounterProps {
 const BeatCounter = ({ color, bpm }: BeatCounterProps) => {
     const [isRunning, setIsRunning] = useState(false);
     const [currentBeat, setCurrentBeat] = useState(0);
+    const [muted, setMuted] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
         if (isRunning) {
@@ -29,8 +31,22 @@ const BeatCounter = ({ color, bpm }: BeatCounterProps) => {
         };
     }, [isRunning, bpm]);
 
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.volume = muted ? 0 : 1;
+            audioRef.current.currentTime = 0;
+            audioRef.current.play();
+        }
+    }, [currentBeat, muted]);
+
     return (
         <div className="flex flex-col items-center gap-4">
+            <audio
+                ref={audioRef}
+                src="/buttonclick.wav"
+                preload="auto"
+                className="hidden"
+            />
             <div className="flex gap-6 mb-4">
                 {Array.from({ length: beatCounter }, (_, i) => (
                     <div
@@ -62,6 +78,9 @@ const BeatCounter = ({ color, bpm }: BeatCounterProps) => {
                 </Button>
                 <Button onClick={() => setCurrentBeat(0)} disabled={isRunning}>
                     Reset
+                </Button>
+                <Button onClick={() => setMuted((m) => !m)}>
+                    {muted ? "Unmute" : "Mute"}
                 </Button>
             </div>
         </div>
