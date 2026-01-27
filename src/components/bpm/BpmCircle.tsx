@@ -30,7 +30,7 @@ export default function BpmCircle({ active, bpm }: BpmCircleProps) {
         <div
             className={cn(
                 "w-12 h-12 rounded-full border-2 border-foreground",
-                `bg-${active ? "foreground" : "transparent"}`,
+                `${active ? "bg-foreground" : "bg-transparent"}`,
                 pulse ? "pulsate-bck" : "",
                 !active ? "paused" : "",
             )}
