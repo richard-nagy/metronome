@@ -1,4 +1,4 @@
-import { getColorFromRange } from "@/helpers/utils";
+import { getColorFromRange } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     beatCounter,
@@ -7,6 +7,8 @@ import {
     minBpm,
     msPerMinute,
 } from "../constants";
+import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
 import BpmAudio from "./BpmAudio";
 import BpmControls from "./BpmControls";
 import BpmSlider from "./BpmSlider";
@@ -14,10 +16,21 @@ import BpmVisualCue from "./BpmVisualCue";
 
 const BpmContainer = () => {
     const [muted, setMuted] = useState(false);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const [bpm, setBpm] = useState(defaultBpm);
     const [isRunning, setIsRunning] = useState(false);
     const [beat, setBeat] = useState(0);
+    const [showDownBeats, setShowDownBeats] = useState(true);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const currentBeatCounter = useMemo(
+        () => beatCounter * (showDownBeats ? 2 : 1),
+        [showDownBeats],
+    );
+
+    const speed = useMemo(
+        () => bpm * (showDownBeats ? 2 : 1),
+        [bpm, showDownBeats],
+    );
 
     const color = useMemo(() => getColorFromRange(bpm, minBpm, maxBpm), [bpm]);
 
@@ -51,8 +64,8 @@ const BpmContainer = () => {
     useEffect(() => {
         if (isRunning) {
             intervalRef.current = setInterval(() => {
-                setBeat((prev) => (prev + 1) % beatCounter);
-            }, msPerMinute / bpm);
+                setBeat((prev) => (prev + 1) % currentBeatCounter);
+            }, msPerMinute / speed);
         } else if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
@@ -62,15 +75,25 @@ const BpmContainer = () => {
                 clearInterval(intervalRef.current);
             }
         };
-    }, [isRunning, bpm]);
+    }, [isRunning, speed, currentBeatCounter]);
+
+    useEffect(() => {
+        if (showDownBeats) {
+            setBeat((prev) => prev * 2);
+        } else {
+            setBeat((prev) => Math.floor(prev / 2));
+        }
+    }, [showDownBeats]);
 
     return (
         <div className="flex flex-col items-center gap-3">
             <BpmVisualCue
-                beatCounter={beatCounter}
-                bpm={bpm}
+                beatCounter={currentBeatCounter}
+                bpm={speed}
                 beat={beat}
                 isRunning={isRunning}
+                showDownBeats={showDownBeats}
+                color={color}
             />
             <BpmSlider
                 bpm={bpm}
@@ -90,6 +113,14 @@ const BpmContainer = () => {
                 setIsRunning={setIsRunning}
                 setMuted={setMuted}
             />
+            <div className="flex items-center space-x-2">
+                <Label htmlFor="show-down-beats">Show Down Beats</Label>
+                <Switch
+                    id="show-down-beats"
+                    checked={showDownBeats}
+                    onCheckedChange={setShowDownBeats}
+                />
+            </div>
             <BpmAudio beat={beat} muted={muted} />
         </div>
     );

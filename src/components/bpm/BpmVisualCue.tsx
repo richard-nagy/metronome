@@ -5,17 +5,28 @@ interface BpmVisualCueProps {
     bpm: number;
     beat: number;
     isRunning: boolean;
+    showDownBeats: boolean;
+    color: string;
 }
 const BpmVisualCue = ({
     beatCounter,
     bpm,
     beat,
     isRunning,
+    showDownBeats,
+    color,
 }: BpmVisualCueProps) => {
     return (
         <div className="flex gap-6 mb-4">
             {Array.from({ length: beatCounter }, (_, i) => (
-                <BpmCircle key={i} bpm={bpm} active={isRunning && beat === i} />
+                <BpmCircle
+                    key={i}
+                    bpm={bpm}
+                    color={color}
+                    first={i === 0}
+                    active={isRunning && beat === i}
+                    downBeat={showDownBeats && i % 2 !== 0}
+                />
             ))}
         </div>
     );

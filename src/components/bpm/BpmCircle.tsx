@@ -1,13 +1,22 @@
-import { cn } from "@/helpers/utils";
+import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useState } from "react";
 import { msPerSecond, sPerMinute } from "../constants";
 
 interface BpmCircleProps {
+    color: string;
+    first: boolean;
     active: boolean;
     bpm: number;
+    downBeat: boolean;
 }
 
-export default function BpmCircle({ active, bpm }: BpmCircleProps) {
+export default function BpmCircle({
+    color,
+    first,
+    active,
+    bpm,
+    downBeat,
+}: BpmCircleProps) {
     const [pulse, setPulse] = useState(false);
 
     // Half a beat in seconds
@@ -29,13 +38,25 @@ export default function BpmCircle({ active, bpm }: BpmCircleProps) {
     return (
         <div
             className={cn(
-                "w-12 h-12 rounded-full border-2 border-foreground",
-                `${active ? "bg-foreground" : "bg-transparent"}`,
+                "w-12 h-12 rounded-full border-2",
+                !first && active
+                    ? "bg-foreground"
+                    : !first
+                      ? "bg-foreground/5"
+                      : undefined,
+                !first && "border-foreground",
+                downBeat ? "border-dashed" : "",
                 pulse ? "pulsate-bck" : "",
                 !active ? "paused" : "",
             )}
             style={
                 {
+                    ...(first
+                        ? {
+                              borderColor: color,
+                              backgroundColor: active ? color : undefined,
+                          }
+                        : {}),
                     "--pulse-duration": `${pulseInterval}s`,
                 } as React.CSSProperties & Record<string, string>
             }
