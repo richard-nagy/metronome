@@ -1,28 +1,20 @@
+import { cn } from "@/helpers/utils";
 import { useEffect, useMemo, useState } from "react";
+import { msPerSecond, sPerMinute } from "../constants";
 
-const sPerMinute = 60;
-const msPerSecond = 1000;
-
-interface BpmPulseProps {
-    isRunning: boolean;
+interface BpmCircleProps {
+    active: boolean;
     bpm: number;
-    color: string;
-    currentBeat: number;
 }
 
-export default function BpmPulse({
-    isRunning,
-    color,
-    bpm,
-    currentBeat,
-}: BpmPulseProps) {
+export default function BpmCircle({ active, bpm }: BpmCircleProps) {
     const [pulse, setPulse] = useState(false);
 
     // Half a beat in seconds
     const pulseInterval = useMemo(() => sPerMinute / bpm / 2, [bpm]);
 
     useEffect(() => {
-        if (isRunning) {
+        if (active) {
             setPulse(true);
             const timeout = setTimeout(
                 () => setPulse(false),
@@ -32,20 +24,21 @@ export default function BpmPulse({
         } else {
             setPulse(false);
         }
-        // Include currentBeat in dependencies to retrigger effect on beat change
-    }, [bpm, isRunning, pulseInterval, currentBeat]);
+    }, [bpm, pulseInterval, active]);
 
     return (
         <div
-            className={`rounded-full w-24 h-24 flex items-center text-black justify-center text-2xl font-bold ${pulse ? "pulsate-bck" : ""} ${!isRunning ? "paused" : ""}`}
+            className={cn(
+                "w-12 h-12 rounded-full border-2 border-foreground",
+                `bg-${active ? "foreground" : "transparent"}`,
+                pulse ? "pulsate-bck" : "",
+                !active ? "paused" : "",
+            )}
             style={
                 {
                     "--pulse-duration": `${pulseInterval}s`,
-                    backgroundColor: color,
                 } as React.CSSProperties & Record<string, string>
             }
-        >
-            {isRunning ? currentBeat + 1 : "#"}
-        </div>
+        />
     );
 }

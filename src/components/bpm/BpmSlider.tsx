@@ -1,32 +1,22 @@
+import { defaultBpm, maxBpm, minBpm } from "../constants";
 import { Slider } from "../ui/slider";
 
 interface BpmSliderProps {
     bpm: number;
-    min: number;
-    max: number;
-    defaultValue: number;
     color: string;
     onChange: (value: number) => void;
     onDoubleClick: () => void;
 }
-const BpmSlider = ({
-    bpm,
-    min,
-    max,
-    defaultValue,
-    color,
-    onChange,
-    onDoubleClick,
-}: BpmSliderProps) => (
+const BpmSlider = ({ bpm, color, onChange, onDoubleClick }: BpmSliderProps) => (
     <Slider
-        defaultValue={[defaultValue]}
+        defaultValue={[defaultBpm]}
         value={[bpm]}
-        min={min}
-        max={max}
+        min={minBpm}
+        max={maxBpm}
         step={1}
-        fillColor={color}
+        thumbColor={color}
         className="w-100"
-        onValueChange={(value) => onChange(value[0] ?? min)}
+        onValueChange={(value) => onChange(value[0] ?? minBpm)}
         onDoubleClick={onDoubleClick}
     />
 );
