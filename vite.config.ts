@@ -10,6 +10,12 @@ export default defineConfig({
         tailwindcss(),
         checker({
             typescript: true,
+            eslint: {
+                useFlatConfig: true,
+                lintCommand:
+                    'eslint "./src/**/*.{ts,tsx,js,jsx}" --max-warnings=0',
+            },
+            overlay: { initialIsOpen: true },
         }),
     ],
     server: {

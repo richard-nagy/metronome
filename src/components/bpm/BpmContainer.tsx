@@ -65,11 +65,10 @@ const BpmContainer = () => {
     }, [isRunning, bpm]);
 
     return (
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-3">
             <BpmVisualCue
                 beatCounter={beatCounter}
                 bpm={bpm}
-                color={color}
                 beat={beat}
                 isRunning={isRunning}
             />
