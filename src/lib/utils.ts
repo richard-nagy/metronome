@@ -1,3 +1,4 @@
+import { Theme } from "@/types/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -11,12 +12,14 @@ export function cn(...inputs: ClassValue[]) {
  * @param value - The input number between minValue and maxValue.
  * @param minValue - The minimum value of the range.
  * @param maxValue - The maximum value of the range.
+ * @param theme - The current theme, either Dark or Light.
  * @returns A CSS-compatible HSL color string.
  */
 export const getColorFromRange = (
     value: number,
     minValue: number,
     maxValue: number,
+    theme: Theme.Dark | Theme.Light,
 ): string => {
     // Handle degenerate range to avoid division by zero and invalid CSS color.
     if (maxValue === minValue) {
@@ -33,5 +36,6 @@ export const getColorFromRange = (
      * 100% (Value maxValue)-> Hue 0   (Red)
      */
     const hue: number = 180 - percentage * 180;
-    return `hsl(${hue}, 100%, 50%)`;
+    // Adjust lightness based on theme for better visibility.
+    return `hsl(${hue}, 100%, ${theme === Theme.Dark ? 60 : 40}%)`;
 };

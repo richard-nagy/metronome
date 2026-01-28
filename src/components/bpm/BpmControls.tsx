@@ -40,7 +40,7 @@ const BpmControls = ({
                 min={minBpm}
                 max={maxBpm}
                 type="number"
-                className="h-10 w-18 text-center"
+                className="h-10 w-18 text-center px-4 text-lg! font-bold"
                 style={{ color }}
                 onChange={(e) => onInputChange(parseInt(e.target.value))}
                 onBlur={onInputBlur}

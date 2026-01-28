@@ -9,6 +9,7 @@ import {
 } from "../constants";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
+import { useResolvedTheme } from "../ui/useResolvedTheme";
 import BpmAudio from "./BpmAudio";
 import BpmControls from "./BpmControls";
 import BpmSlider from "./BpmSlider";
@@ -21,6 +22,7 @@ const BpmContainer = () => {
     const [beat, setBeat] = useState(0);
     const [showDownBeats, setShowDownBeats] = useState(true);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const resolvedTheme = useResolvedTheme();
 
     const currentBeatCounter = useMemo(
         () => beatCounter * (showDownBeats ? 2 : 1),
@@ -32,7 +34,10 @@ const BpmContainer = () => {
         [bpm, showDownBeats],
     );
 
-    const color = useMemo(() => getColorFromRange(bpm, minBpm, maxBpm), [bpm]);
+    const color = useMemo(
+        () => getColorFromRange(bpm, minBpm, maxBpm, resolvedTheme),
+        [bpm, resolvedTheme],
+    );
 
     const onButtonChange = useCallback((value: number) => {
         setBpm((oldBpm) => {
