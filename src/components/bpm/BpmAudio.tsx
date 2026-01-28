@@ -1,19 +1,25 @@
 import { useEffect, useRef } from "react";
 
 interface BpmAudioProps {
-    muted: boolean;
     beat: number;
+    volume: number;
 }
-const BpmAudio = ({ muted, beat }: BpmAudioProps) => {
+const BpmAudio = ({ beat, volume }: BpmAudioProps) => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
         if (audioRef.current) {
-            audioRef.current.volume = muted ? 0 : 1;
             audioRef.current.currentTime = 0;
             audioRef.current.play();
         }
-    }, [beat, muted]);
+    }, [beat]);
+
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.volume = volume;
+            audioRef.current.muted = volume === 0;
+        }
+    }, [volume]);
 
     return (
         <audio

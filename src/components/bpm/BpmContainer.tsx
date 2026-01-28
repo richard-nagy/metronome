@@ -16,11 +16,11 @@ import BpmSlider from "./BpmSlider";
 import BpmVisualCue from "./BpmVisualCue";
 
 const BpmContainer = () => {
-    const [muted, setMuted] = useState(false);
     const [bpm, setBpm] = useState(defaultBpm);
     const [isRunning, setIsRunning] = useState(false);
     const [beat, setBeat] = useState(0);
     const [showDownBeats, setShowDownBeats] = useState(true);
+    const [volume, setVolume] = useState(1);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const resolvedTheme = useResolvedTheme();
 
@@ -110,13 +110,13 @@ const BpmContainer = () => {
                 bpm={bpm}
                 color={color}
                 isRunning={isRunning}
-                muted={muted}
+                volume={volume}
                 onButtonChange={onButtonChange}
                 onInputChange={onInputChange}
                 onInputBlur={onInputBlur}
                 setBeat={setBeat}
                 setIsRunning={setIsRunning}
-                setMuted={setMuted}
+                setVolume={setVolume}
             />
             <div className="flex items-center space-x-2">
                 <Label htmlFor="show-down-beats">Show Down Beats</Label>
@@ -126,7 +126,7 @@ const BpmContainer = () => {
                     onCheckedChange={setShowDownBeats}
                 />
             </div>
-            <BpmAudio beat={beat} muted={muted} />
+            <BpmAudio beat={beat} volume={volume} />
         </div>
     );
 };
