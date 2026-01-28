@@ -3,7 +3,7 @@ import BpmCircle from "./BpmCircle";
 interface BpmVisualCueProps {
     beatCounter: number;
     bpm: number;
-    beat: number;
+    beat: number | undefined;
     isRunning: boolean;
     showDownBeats: boolean;
     color: string;

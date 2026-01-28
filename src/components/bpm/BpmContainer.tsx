@@ -18,8 +18,9 @@ import BpmVisualCue from "./BpmVisualCue";
 const BpmContainer = () => {
     const [bpm, setBpm] = useState(defaultBpm);
     const [isRunning, setIsRunning] = useState(false);
-    const [beat, setBeat] = useState(0);
-    const [showDownBeats, setShowDownBeats] = useState(true);
+    const [beat, setBeat] = useState<number | undefined>(undefined);
+    const [showDownBeats, setShowDownBeats] = useState(false);
+    const [soundOnFirstBeat, setSoundOnFirstBeat] = useState(false);
     const [volume, setVolume] = useState(1);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const resolvedTheme = useResolvedTheme();
@@ -69,7 +70,9 @@ const BpmContainer = () => {
     useEffect(() => {
         if (isRunning) {
             intervalRef.current = setInterval(() => {
-                setBeat((prev) => (prev + 1) % currentBeatCounter);
+                setBeat((prev) =>
+                    prev !== undefined ? (prev + 1) % currentBeatCounter : 0,
+                );
             }, msPerMinute / speed);
         } else if (intervalRef.current) {
             clearInterval(intervalRef.current);
@@ -84,9 +87,9 @@ const BpmContainer = () => {
 
     useEffect(() => {
         if (showDownBeats) {
-            setBeat((prev) => prev * 2);
+            setBeat((prev) => (prev !== undefined ? prev * 2 : 0));
         } else {
-            setBeat((prev) => Math.floor(prev / 2));
+            setBeat((prev) => (prev !== undefined ? Math.floor(prev / 2) : 0));
         }
     }, [showDownBeats]);
 
@@ -119,6 +122,16 @@ const BpmContainer = () => {
                 setVolume={setVolume}
             />
             <div className="flex items-center space-x-2">
+                <Label htmlFor="sound-on-first-beat">
+                    Play sound only on first beat
+                </Label>
+                <Switch
+                    id="sound-on-first-beat"
+                    checked={soundOnFirstBeat}
+                    onCheckedChange={setSoundOnFirstBeat}
+                />
+            </div>
+            <div className="flex items-center space-x-2">
                 <Label htmlFor="show-down-beats">Show Down Beats</Label>
                 <Switch
                     id="show-down-beats"
@@ -126,7 +139,11 @@ const BpmContainer = () => {
                     onCheckedChange={setShowDownBeats}
                 />
             </div>
-            <BpmAudio beat={beat} volume={volume} />
+            <BpmAudio
+                beat={beat}
+                volume={volume}
+                soundOnFirstBeat={soundOnFirstBeat}
+            />
         </div>
     );
 };
