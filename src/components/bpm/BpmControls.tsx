@@ -1,9 +1,8 @@
-import { Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
+import { Hash, Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
 import { defaultBeatCounter, defaultBpm } from "../constants";
 import { Button } from "../ui/button";
 import { Slider } from "../ui/slider";
 import BpmSlider from "./BpmSlider";
-import { Label } from "../ui/label";
 
 interface BpmControlsProps {
     bpm: number;
@@ -113,7 +112,7 @@ const BpmControls = ({
             />
         </div>
         <div className="flex flex-row gap-3">
-            <Label htmlFor="beat-number">Beat Number</Label>
+            <Hash className="size-5" />
             <Slider
                 id="beat-number"
                 className="w-30"

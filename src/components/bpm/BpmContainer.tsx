@@ -80,7 +80,7 @@ const BpmContainer = () => {
 
     return (
         <div className="flex flex-col items-center gap-5">
-            <h1 className="scroll-m-20 mb-10 text-center tracking-tight text-balance">
+            <h1 className="mb-3 text-center tracking-tight text-balance">
                 <span style={{ color }} className="font-bold text-4xl">
                     {bpm}{" "}
                 </span>
