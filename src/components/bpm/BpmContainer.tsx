@@ -12,7 +12,6 @@ import { Switch } from "../ui/switch";
 import { useResolvedTheme } from "../ui/useResolvedTheme";
 import BpmAudio from "./BpmAudio";
 import BpmControls from "./BpmControls";
-import BpmSlider from "./BpmSlider";
 import BpmVisualCue from "./BpmVisualCue";
 
 const BpmContainer = () => {
@@ -53,21 +52,6 @@ const BpmContainer = () => {
         });
     }, []);
 
-    const onInputChange = useCallback((value: number) => {
-        setBpm(value);
-    }, []);
-
-    const onInputBlur = useCallback(() => {
-        setBpm((oldBpm) => {
-            if (oldBpm <= minBpm) {
-                return minBpm;
-            } else if (oldBpm >= maxBpm) {
-                return maxBpm;
-            }
-            return oldBpm;
-        });
-    }, []);
-
     useEffect(() => {
         if (isRunning) {
             intervalRef.current = setInterval(() => {
@@ -95,7 +79,15 @@ const BpmContainer = () => {
     }, [showDownBeats]);
 
     return (
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-5">
+            <h1 className="scroll-m-20 mb-10 text-center tracking-tight text-balance">
+                <span style={{ color }} className="font-bold text-4xl">
+                    {bpm}{" "}
+                </span>
+                <span className="font-light text-secondary-foreground text-3xl">
+                    BPM
+                </span>
+            </h1>
             <BpmVisualCue
                 beatCounter={currentBeatCounter}
                 bpm={speed}
@@ -104,25 +96,18 @@ const BpmContainer = () => {
                 showDownBeats={showDownBeats}
                 color={color}
             />
-            <BpmSlider
-                bpm={bpm}
-                color={color}
-                onChange={setBpm}
-                onDoubleClick={() => setBpm(defaultBpm)}
-            />
             <BpmControls
                 bpm={bpm}
                 color={color}
-                isRunning={isRunning}
                 volume={volume}
                 beatCounter={beatCounter}
+                isRunning={isRunning}
                 onButtonChange={onButtonChange}
-                onInputChange={onInputChange}
-                onInputBlur={onInputBlur}
-                setBeat={setBeat}
-                setIsRunning={setIsRunning}
                 setVolume={setVolume}
                 setBeatCounter={setBeatCounter}
+                setIsRunning={setIsRunning}
+                setBeat={setBeat}
+                setBpm={setBpm}
             />
             <div className="flex items-center space-x-2">
                 <Label htmlFor="sound-on-first-beat">

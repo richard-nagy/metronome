@@ -38,7 +38,7 @@ export default function BpmCircle({
     return (
         <div
             className={cn(
-                "w-12 h-12 rounded-full border-2",
+                "w-14 h-14 rounded-full border-2",
                 !first && active
                     ? "bg-foreground"
                     : !first
