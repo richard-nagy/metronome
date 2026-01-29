@@ -1,4 +1,4 @@
-export const beatCounter = 4;
+export const defaultBeatCounter = 4;
 export const maxBpm = 300;
 export const minBpm = 40;
 export const defaultBpm = 120;

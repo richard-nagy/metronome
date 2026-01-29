@@ -1,7 +1,7 @@
 import { getColorFromRange } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    beatCounter,
+    defaultBeatCounter,
     defaultBpm,
     maxBpm,
     minBpm,
@@ -22,12 +22,13 @@ const BpmContainer = () => {
     const [showDownBeats, setShowDownBeats] = useState(false);
     const [soundOnFirstBeat, setSoundOnFirstBeat] = useState(false);
     const [volume, setVolume] = useState(1);
+    const [beatCounter, setBeatCounter] = useState(defaultBeatCounter);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const resolvedTheme = useResolvedTheme();
 
     const currentBeatCounter = useMemo(
         () => beatCounter * (showDownBeats ? 2 : 1),
-        [showDownBeats],
+        [beatCounter, showDownBeats],
     );
 
     const speed = useMemo(
@@ -114,12 +115,14 @@ const BpmContainer = () => {
                 color={color}
                 isRunning={isRunning}
                 volume={volume}
+                beatCounter={beatCounter}
                 onButtonChange={onButtonChange}
                 onInputChange={onInputChange}
                 onInputBlur={onInputBlur}
                 setBeat={setBeat}
                 setIsRunning={setIsRunning}
                 setVolume={setVolume}
+                setBeatCounter={setBeatCounter}
             />
             <div className="flex items-center space-x-2">
                 <Label htmlFor="sound-on-first-beat">
