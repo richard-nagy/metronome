@@ -17,7 +17,7 @@ const BpmVisualCue = ({
     color,
 }: BpmVisualCueProps) => {
     return (
-        <div className="flex gap-6 mb-4 max-w-80 flex-wrap flex-row justify-center">
+        <div className="flex mb-4 gap-4 w-74 h-74 flex-wrap flex-row justify-center items-center">
             {Array.from({ length: beatCounter }, (_, i) => (
                 <BpmCircle
                     key={i}
