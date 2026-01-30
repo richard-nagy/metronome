@@ -17,17 +17,19 @@ const BpmVisualCue = ({
     color,
 }: BpmVisualCueProps) => {
     return (
-        <div className="flex mb-4 gap-4 w-74 h-74 flex-wrap flex-row justify-center items-center">
-            {Array.from({ length: beatCounter }, (_, i) => (
-                <BpmCircle
-                    key={i}
-                    bpm={bpm}
-                    color={color}
-                    first={i === 0}
-                    active={isRunning && beat === i}
-                    downBeat={showDownBeats && i % 2 !== 0}
-                />
-            ))}
+        <div className="w-74 h-74 flex mb-4 justify-center items-center">
+            <div className="gap-4 flex flex-wrap justify-center">
+                {Array.from({ length: beatCounter }, (_, i) => (
+                    <BpmCircle
+                        key={i}
+                        bpm={bpm}
+                        color={color}
+                        first={i === 0}
+                        active={isRunning && beat === i}
+                        downBeat={showDownBeats && i % 2 !== 0}
+                    />
+                ))}
+            </div>
         </div>
     );
 };
