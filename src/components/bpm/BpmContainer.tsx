@@ -7,8 +7,6 @@ import {
     minBpm,
     msPerMinute,
 } from "../constants";
-import { Label } from "../ui/label";
-import { Switch } from "../ui/switch";
 import { useResolvedTheme } from "../ui/useResolvedTheme";
 import BpmAudio from "./BpmAudio";
 import BpmControls from "./BpmControls";
@@ -102,31 +100,17 @@ const BpmContainer = () => {
                 volume={volume}
                 beatCounter={beatCounter}
                 isRunning={isRunning}
+                soundOnFirstBeat={soundOnFirstBeat}
+                showDownBeats={showDownBeats}
                 onButtonChange={onButtonChange}
                 setVolume={setVolume}
                 setBeatCounter={setBeatCounter}
                 setIsRunning={setIsRunning}
                 setBeat={setBeat}
                 setBpm={setBpm}
+                setSoundOnFirstBeat={setSoundOnFirstBeat}
+                setShowDownBeats={setShowDownBeats}
             />
-            <div className="flex items-center space-x-2">
-                <Label htmlFor="sound-on-first-beat">
-                    Play sound only on first beat
-                </Label>
-                <Switch
-                    id="sound-on-first-beat"
-                    checked={soundOnFirstBeat}
-                    onCheckedChange={setSoundOnFirstBeat}
-                />
-            </div>
-            <div className="flex items-center space-x-2">
-                <Label htmlFor="show-down-beats">Show Down Beats</Label>
-                <Switch
-                    id="show-down-beats"
-                    checked={showDownBeats}
-                    onCheckedChange={setShowDownBeats}
-                />
-            </div>
             <BpmAudio
                 beat={beat}
                 volume={volume}
