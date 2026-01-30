@@ -8,7 +8,6 @@ import {
     msPerMinute,
 } from "../constants";
 import { useResolvedTheme } from "../ui/useResolvedTheme";
-import BpmAudio from "./BpmAudio";
 import BpmControls from "./BpmControls";
 import BpmVisualCue from "./BpmVisualCue";
 
@@ -17,8 +16,6 @@ const BpmContainer = () => {
     const [isRunning, setIsRunning] = useState(false);
     const [beat, setBeat] = useState<number | undefined>(undefined);
     const [showDownBeats, setShowDownBeats] = useState(false);
-    const [soundOnFirstBeat, setSoundOnFirstBeat] = useState(false);
-    const [volume, setVolume] = useState(1);
     const [beatCounter, setBeatCounter] = useState(defaultBeatCounter);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const resolvedTheme = useResolvedTheme();
@@ -95,26 +92,18 @@ const BpmContainer = () => {
                 color={color}
             />
             <BpmControls
+                beat={beat}
                 bpm={bpm}
                 color={color}
-                volume={volume}
                 beatCounter={beatCounter}
                 isRunning={isRunning}
-                soundOnFirstBeat={soundOnFirstBeat}
                 showDownBeats={showDownBeats}
                 onButtonChange={onButtonChange}
-                setVolume={setVolume}
                 setBeatCounter={setBeatCounter}
                 setIsRunning={setIsRunning}
                 setBeat={setBeat}
                 setBpm={setBpm}
-                setSoundOnFirstBeat={setSoundOnFirstBeat}
                 setShowDownBeats={setShowDownBeats}
-            />
-            <BpmAudio
-                beat={beat}
-                volume={volume}
-                soundOnFirstBeat={soundOnFirstBeat}
             />
         </div>
     );

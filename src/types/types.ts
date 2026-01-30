@@ -3,3 +3,9 @@ export enum Theme {
     Light = "light",
     System = "system",
 }
+
+export enum SoundOption {
+    All = "all",
+    Full = "full",
+    First = "first",
+}

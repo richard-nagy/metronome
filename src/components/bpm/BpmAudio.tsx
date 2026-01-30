@@ -1,22 +1,51 @@
+import { SoundOption } from "@/types/types";
 import { useEffect, useRef } from "react";
 
 interface BpmAudioProps {
     beat: number | undefined;
     volume: number;
-    soundOnFirstBeat: boolean;
+    soundOption: SoundOption;
+    showDownBeats: boolean;
 }
-const BpmAudio = ({ beat, volume, soundOnFirstBeat }: BpmAudioProps) => {
+const BpmAudio = ({
+    beat,
+    volume,
+    soundOption,
+    showDownBeats,
+}: BpmAudioProps) => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    useEffect(() => {
-        if (audioRef.current && beat !== undefined) {
-            if (soundOnFirstBeat && beat !== 0) {
-                return;
-            }
+    const playAudioFromStart = () => {
+        if (audioRef?.current) {
             audioRef.current.currentTime = 0;
             audioRef.current.play();
         }
-    }, [beat, soundOnFirstBeat]);
+    };
+
+    useEffect(() => {
+        if (beat !== undefined) {
+            switch (soundOption) {
+                case SoundOption.All:
+                    playAudioFromStart();
+                    break;
+                case SoundOption.First:
+                    if (beat === 0) {
+                        playAudioFromStart();
+                        break;
+                    }
+                    break;
+                case SoundOption.Full:
+                    if (showDownBeats && beat % 2 === 0) {
+                        playAudioFromStart();
+                    } else {
+                        playAudioFromStart();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }, [beat, showDownBeats, soundOption]);
 
     useEffect(() => {
         if (audioRef.current) {
