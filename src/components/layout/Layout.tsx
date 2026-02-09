@@ -7,7 +7,7 @@ export default function Layout() {
             <header className="sticky top-0 z-50 p-2 ml-auto">
                 <ThemeToggle />
             </header>
-            <main className="flex flex-1 flex-col gap-5 items-center justify-center min-w-100">
+            <main className="flex flex-1 flex-col gap-5 items-center justify-center min-w-100 pb-3">
                 <BpmContainer />
             </main>
         </div>
