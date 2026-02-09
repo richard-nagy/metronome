@@ -35,8 +35,10 @@ const BpmAudio = ({
                     }
                     break;
                 case SoundOption.Full:
-                    if (showDownBeats && beat % 2 === 0) {
-                        playAudioFromStart();
+                    if (showDownBeats) {
+                        if (beat % 2 === 0) {
+                            playAudioFromStart();
+                        }
                     } else {
                         playAudioFromStart();
                     }
