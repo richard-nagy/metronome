@@ -16,7 +16,7 @@ export default function Layout() {
                 </div>
                 <ThemeToggle />
             </header>
-            <main className="flex flex-1 flex-col gap-5 items-center justify-center min-w-100 pb-3">
+            <main className="flex flex-1 flex-col gap-5 items-center justify-center min-w-75 pb-3">
                 <BpmContainer />
             </main>
         </div>

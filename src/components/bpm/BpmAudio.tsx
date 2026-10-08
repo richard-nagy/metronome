@@ -3,15 +3,17 @@ import { useEffect, useRef } from "react";
 
 interface BpmAudioProps {
     beat: number | undefined;
+    isRunning: boolean;
     volume: number;
     soundOption: SoundOption;
-    showDownBeats: boolean;
+    showSubdivisions: boolean;
 }
 const BpmAudio = ({
     beat,
+    isRunning,
     volume,
     soundOption,
-    showDownBeats,
+    showSubdivisions,
 }: BpmAudioProps) => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -23,7 +25,7 @@ const BpmAudio = ({
     };
 
     useEffect(() => {
-        if (beat !== undefined) {
+        if (isRunning && beat !== undefined) {
             switch (soundOption) {
                 case SoundOption.All:
                     playAudioFromStart();
@@ -35,7 +37,7 @@ const BpmAudio = ({
                     }
                     break;
                 case SoundOption.Full:
-                    if (showDownBeats) {
+                    if (showSubdivisions) {
                         if (beat % 2 === 0) {
                             playAudioFromStart();
                         }
@@ -47,7 +49,7 @@ const BpmAudio = ({
                     break;
             }
         }
-    }, [beat, showDownBeats, soundOption]);
+    }, [beat, isRunning, showSubdivisions, soundOption]);
 
     useEffect(() => {
         if (audioRef.current) {

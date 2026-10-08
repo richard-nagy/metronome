@@ -5,7 +5,7 @@ interface BpmVisualCueProps {
     bpm: number;
     beat: number | undefined;
     isRunning: boolean;
-    showDownBeats: boolean;
+    showSubdivisions: boolean;
     color: string;
 }
 const BpmVisualCue = ({
@@ -13,7 +13,7 @@ const BpmVisualCue = ({
     bpm,
     beat,
     isRunning,
-    showDownBeats,
+    showSubdivisions,
     color,
 }: BpmVisualCueProps) => {
     return (
@@ -26,7 +26,7 @@ const BpmVisualCue = ({
                         color={color}
                         first={i === 0}
                         active={isRunning && beat === i}
-                        downBeat={showDownBeats && i % 2 !== 0}
+                        subdivision={showSubdivisions && i % 2 !== 0}
                     />
                 ))}
             </div>

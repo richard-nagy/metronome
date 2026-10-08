@@ -7,7 +7,7 @@ interface BpmCircleProps {
     first: boolean;
     active: boolean;
     bpm: number;
-    downBeat: boolean;
+    subdivision: boolean;
 }
 
 export default function BpmCircle({
@@ -15,7 +15,7 @@ export default function BpmCircle({
     first,
     active,
     bpm,
-    downBeat,
+    subdivision,
 }: BpmCircleProps) {
     const [pulse, setPulse] = useState(false);
 
@@ -45,7 +45,7 @@ export default function BpmCircle({
                       ? "bg-foreground/5"
                       : undefined,
                 !first && "border-foreground",
-                downBeat ? "border-dashed" : "",
+                subdivision ? "border-dashed" : "",
                 pulse ? "pulsate-bck" : "",
                 !active ? "paused" : "",
             )}

@@ -1,11 +1,21 @@
 import { getColorFromRange } from "@/lib/utils";
 import { SoundOption } from "@/types/types";
-import { Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    Minus,
+    Pause,
+    Play,
+    Plus,
+    Volume1,
+    Volume2,
+    VolumeX,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import {
     defaultBeatCounter,
     defaultBpm,
+    maxBeatCounter,
     maxBpm,
+    minBeatCounter,
     minBpm,
     msPerMinute,
 } from "../constants";
@@ -23,7 +33,7 @@ const BpmContainer = () => {
     const [bpm, setBpm] = useState(defaultBpm);
     const [isRunning, setIsRunning] = useState(false);
     const [beat, setBeat] = useState<number | undefined>(undefined);
-    const [showDownBeats, setShowDownBeats] = useState(false);
+    const [showSubdivisions, setShowSubdivisions] = useState(false);
     const [beatCounter, setBeatCounter] = useState(defaultBeatCounter);
     const [volume, setVolume] = useState(1);
     const [soundOption, setSoundOption] = useState(SoundOption.Full);
@@ -31,25 +41,14 @@ const BpmContainer = () => {
     const resolvedTheme = useResolvedTheme();
     //#endregion
 
-    //#region Memos
-    const currentBeatCounter = useMemo(
-        () => beatCounter * (showDownBeats ? 2 : 1),
-        [beatCounter, showDownBeats],
-    );
-
-    const speed = useMemo(
-        () => bpm * (showDownBeats ? 2 : 1),
-        [bpm, showDownBeats],
-    );
-
-    const color = useMemo(
-        () => getColorFromRange(bpm, minBpm, maxBpm, resolvedTheme),
-        [bpm, resolvedTheme],
-    );
+    //#region Derived values
+    const tickCount = beatCounter * (showSubdivisions ? 2 : 1);
+    const tickRate = bpm * (showSubdivisions ? 2 : 1);
+    const color = getColorFromRange(bpm, minBpm, maxBpm, resolvedTheme);
     //#endregion
 
-    //#region Callbacks
-    const onButtonChange = useCallback((value: number) => {
+    //#region Functions
+    const onButtonChange = (value: number) => {
         setBpm((oldBpm) => {
             const result = oldBpm + value;
             if (result <= minBpm) {
@@ -59,7 +58,7 @@ const BpmContainer = () => {
             }
             return result;
         });
-    }, []);
+    };
     //#endregion
 
     //#region Effects
@@ -67,9 +66,9 @@ const BpmContainer = () => {
         if (isRunning) {
             intervalRef.current = setInterval(() => {
                 setBeat((prev) =>
-                    prev !== undefined ? (prev + 1) % currentBeatCounter : 0,
+                    prev !== undefined ? (prev + 1) % tickCount : 0,
                 );
-            }, msPerMinute / speed);
+            }, msPerMinute / tickRate);
         } else if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
@@ -79,21 +78,30 @@ const BpmContainer = () => {
                 clearInterval(intervalRef.current);
             }
         };
-    }, [isRunning, speed, currentBeatCounter]);
+    }, [isRunning, tickRate, tickCount]);
 
     useEffect(() => {
-        if (showDownBeats) {
-            setBeat((prev) => (prev !== undefined ? prev * 2 : 0));
-        } else {
-            setBeat((prev) => (prev !== undefined ? Math.floor(prev / 2) : 0));
-        }
-    }, [showDownBeats]);
+        setBeat((prev) => {
+            if (prev === undefined) {
+                return prev;
+            }
+            return showSubdivisions ? prev * 2 : Math.floor(prev / 2);
+        });
+    }, [showSubdivisions]);
     //#endregion
 
     //#region Render
     return (
-        <div className="flex flex-col items-center gap-5">
-            <h1 className="mb-3 text-center tracking-tight text-balance">
+        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-5 px-4">
+            <BpmVisualCue
+                beatCounter={tickCount}
+                bpm={tickRate}
+                beat={beat}
+                isRunning={isRunning}
+                showSubdivisions={showSubdivisions}
+                color={color}
+            />
+            <h1 className="text-center text-balance mb-1">
                 <span style={{ color }} className="font-bold text-4xl">
                     {bpm}{" "}
                 </span>
@@ -101,149 +109,170 @@ const BpmContainer = () => {
                     BPM
                 </span>
             </h1>
-            <BpmVisualCue
-                beatCounter={currentBeatCounter}
-                bpm={speed}
-                beat={beat}
-                isRunning={isRunning}
-                showDownBeats={showDownBeats}
-                color={color}
-            />
             <Slider
-                defaultValue={[defaultBpm]}
                 value={[bpm]}
                 min={minBpm}
                 max={maxBpm}
                 step={1}
                 thumbColor={color}
-                className="w-100"
+                className="w-full"
                 onValueChange={(value) => setBpm(value[0] ?? minBpm)}
                 onDoubleClick={() => setBpm(defaultBpm)}
             />
-            <div className="flex flex-row gap-3">
+            <div className="flex flex-row justify-center w-full items-center gap-3">
                 <Button
-                    className="h-10 w-14"
+                    className="h-14 w-14"
                     variant="outline"
                     onClick={() => onButtonChange(-10)}
                 >
                     -10
                 </Button>
                 <Button
-                    className="h-10 w-14"
+                    className="h-14 w-14"
                     variant="outline"
                     onClick={() => onButtonChange(-1)}
                 >
                     -1
                 </Button>
-                <div className="flex flex-row gap-3">
-                    <Button
-                        className="h-14 w-14"
-                        variant="outline"
-                        onClick={() => {
-                            setBeat(0);
-                            setIsRunning((prev) => !prev);
-                        }}
-                    >
-                        {isRunning ? (
-                            <Pause className="size-7" />
-                        ) : (
-                            <Play className="size-7" />
-                        )}
-                    </Button>
-                    <Button
-                        className="h-14 w-14 text-xl"
-                        variant="outline"
-                        disabled
-                    >
-                        Tap
-                    </Button>
-                </div>
                 <Button
-                    className="h-10 w-14"
+                    className="size-14"
+                    variant="outline"
+                    aria-label={
+                        isRunning ? "Pause metronome" : "Start metronome"
+                    }
+                    onClick={() => {
+                        setBeat(0);
+                        setIsRunning((prev) => !prev);
+                    }}
+                >
+                    {isRunning ? (
+                        <Pause className="size-7" />
+                    ) : (
+                        <Play className="size-7" />
+                    )}
+                </Button>
+                <Button
+                    className="h-14 w-14"
                     variant="outline"
                     onClick={() => onButtonChange(1)}
                 >
                     +1
                 </Button>
                 <Button
-                    className="h-10 w-14"
+                    className="h-14 w-14"
                     variant="outline"
                     onClick={() => onButtonChange(10)}
                 >
                     +10
                 </Button>
             </div>
-            <div className="flex flex-row gap-3">
-                <Label htmlFor="beat-number">Beat number: {beatCounter}</Label>
-                <Slider
-                    id="beat-number"
-                    className="w-30"
-                    min={2}
-                    max={8}
-                    step={1}
-                    value={[beatCounter]}
-                    onValueChange={(value) =>
-                        setBeatCounter(() => value?.[0] ?? defaultBeatCounter)
-                    }
-                    onDoubleClick={() =>
-                        setBeatCounter(() => defaultBeatCounter)
-                    }
-                />
-                <div className="flex items-center space-x-2">
-                    <Label htmlFor="show-down-beats">Show down beats</Label>
-                    <Switch
-                        id="show-down-beats"
-                        checked={showDownBeats}
-                        onCheckedChange={setShowDownBeats}
-                    />
-                </div>
+            <BpmAudio
+                beat={beat}
+                isRunning={isRunning}
+                volume={volume}
+                soundOption={soundOption}
+                showSubdivisions={showSubdivisions}
+            />
+            <div className="grid w-full grid-cols-1 gap-x-8 gap-y-6 border-t pt-5 sm:grid-cols-[minmax(0,1fr)_1px_minmax(0,1fr)]">
+                <section className="flex flex-col gap-4">
+                    <h2 className="text-sm font-medium">Rhythm</h2>
+                    <div className="flex items-center justify-between gap-4">
+                        <Label id="beat-number-label">Beats per bar</Label>
+                        <div
+                            role="group"
+                            aria-labelledby="beat-number-label"
+                            className="flex items-center gap-1"
+                        >
+                            <Button
+                                className="size-9"
+                                variant="outline"
+                                aria-label="Decrease beats per bar"
+                                disabled={beatCounter <= minBeatCounter}
+                                onClick={() =>
+                                    setBeatCounter((value) =>
+                                        Math.max(minBeatCounter, value - 1),
+                                    )
+                                }
+                            >
+                                <Minus className="size-4" />
+                            </Button>
+                            <output className="min-w-8 text-center font-medium tabular-nums">
+                                {beatCounter}
+                            </output>
+                            <Button
+                                className="size-9"
+                                variant="outline"
+                                aria-label="Increase beats per bar"
+                                disabled={beatCounter >= maxBeatCounter}
+                                onClick={() =>
+                                    setBeatCounter((value) =>
+                                        Math.min(maxBeatCounter, value + 1),
+                                    )
+                                }
+                            >
+                                <Plus className="size-4" />
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="show-subdivisions">Subdivisions</Label>
+                        <Switch
+                            id="show-subdivisions"
+                            checked={showSubdivisions}
+                            onCheckedChange={setShowSubdivisions}
+                        />
+                    </div>
+                </section>
+                <div aria-hidden="true" className="hidden bg-border sm:block" />
+                <section className="flex flex-col gap-4">
+                    <h2 className="text-sm font-medium">Sound</h2>
+                    <div className="flex items-center gap-3">
+                        <Button
+                            className="size-9 shrink-0"
+                            variant="ghost"
+                            aria-label={volume === 0 ? "Unmute" : "Mute"}
+                            onClick={() => setVolume((v) => (v === 0 ? 1 : 0))}
+                        >
+                            {volume === 0 && <VolumeX className="size-5" />}
+                            {volume > 0 && volume <= 0.5 && (
+                                <Volume1 className="size-5" />
+                            )}
+                            {volume > 0.5 && <Volume2 className="size-5" />}
+                        </Button>
+                        <Slider
+                            id="volume"
+                            className="min-w-0 flex-1"
+                            min={0}
+                            max={1}
+                            step={0.1}
+                            value={[volume]}
+                            onValueChange={(value) => setVolume(value[0] ?? 0)}
+                            onDoubleClick={() => setVolume(1)}
+                        />
+                    </div>
+                    <RadioGroup
+                        value={soundOption}
+                        aria-label="Accent pattern"
+                        className="gap-2"
+                        onValueChange={(value) =>
+                            setSoundOption(value as SoundOption)
+                        }
+                    >
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value={SoundOption.All} id="r1" />
+                            <Label htmlFor="r1">On all beats</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value={SoundOption.Full} id="r2" />
+                            <Label htmlFor="r2">On full beats</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value={SoundOption.First} id="r3" />
+                            <Label htmlFor="r3">On first beat</Label>
+                        </div>
+                    </RadioGroup>
+                </section>
             </div>
-            <div className="flex flex-row gap-3">
-                <BpmAudio
-                    beat={beat}
-                    volume={volume}
-                    soundOption={soundOption}
-                    showDownBeats={showDownBeats}
-                />
-                <Button
-                    className="h-10 w-10"
-                    variant="ghost"
-                    onClick={() => setVolume((v) => (v === 0 ? 1 : 0))}
-                >
-                    {volume === 0 && <VolumeX className="size-5" />}
-                    {volume > 0 && volume <= 0.5 && (
-                        <Volume1 className="size-5" />
-                    )}
-                    {volume > 0.5 && <Volume2 className="size-5" />}
-                </Button>
-                <Slider
-                    className="w-30 mr-3"
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    value={[volume]}
-                    onValueChange={(value) => setVolume(() => value?.[0] ?? 0)}
-                    onDoubleClick={() => setVolume(() => 1)}
-                />
-            </div>
-            <RadioGroup
-                value={soundOption}
-                className="w-fit"
-                onValueChange={(value) => setSoundOption(value as SoundOption)}
-            >
-                <div className="flex items-center gap-3">
-                    <RadioGroupItem value={SoundOption.All} id="r1" />
-                    <Label htmlFor="r1">On all beats</Label>
-                </div>
-                <div className="flex items-center gap-3">
-                    <RadioGroupItem value={SoundOption.Full} id="r2" />
-                    <Label htmlFor="r2">On full beats</Label>
-                </div>
-                <div className="flex items-center gap-3">
-                    <RadioGroupItem value={SoundOption.First} id="r3" />
-                    <Label htmlFor="r3">On first beat</Label>
-                </div>
-            </RadioGroup>
         </div>
     );
     //#endregion
