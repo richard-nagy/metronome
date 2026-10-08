@@ -17,6 +17,7 @@ function Slider({
     max = 100,
     fillColor,
     thumbColor,
+    "aria-label": ariaLabel,
     ...props
 }: SliderProps) {
     const _values = React.useMemo(
@@ -62,6 +63,7 @@ function Slider({
                 <SliderPrimitive.Thumb
                     data-slot="slider-thumb"
                     key={index}
+                    aria-label={ariaLabel}
                     className={cn(
                         "cursor-pointer ring-ring/50 block size-4 shrink-0 rounded-full border bg-white shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50",
                         !thumbColor && "border-primary",

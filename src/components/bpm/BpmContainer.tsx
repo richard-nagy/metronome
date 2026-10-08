@@ -84,6 +84,7 @@ const BpmContainer = () => {
                 </span>
             </h1>
             <Slider
+                aria-label="Tempo in beats per minute"
                 value={[bpm]}
                 min={minBpm}
                 max={maxBpm}
@@ -204,6 +205,7 @@ const BpmContainer = () => {
                             {volume > 0.5 && <Volume2 className="size-5" />}
                         </Button>
                         <Slider
+                            aria-label="Output volume"
                             id="volume"
                             className="min-w-0 flex-1"
                             min={0}
