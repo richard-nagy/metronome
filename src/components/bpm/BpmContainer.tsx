@@ -9,7 +9,7 @@ import {
     Volume2,
     VolumeX,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
     defaultBeatCounter,
     defaultBpm,
@@ -17,7 +17,6 @@ import {
     maxBpm,
     minBeatCounter,
     minBpm,
-    msPerMinute,
 } from "../constants";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
@@ -25,20 +24,24 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Slider } from "../ui/slider";
 import { Switch } from "../ui/switch";
 import { useResolvedTheme } from "../ui/useResolvedTheme";
-import BpmAudio from "./BpmAudio";
 import BpmVisualCue from "./BpmVisualCue";
+import { useMetronomeScheduler } from "./useMetronomeScheduler";
 
 const BpmContainer = () => {
     //#region State
     const [bpm, setBpm] = useState(defaultBpm);
-    const [isRunning, setIsRunning] = useState(false);
-    const [beat, setBeat] = useState<number | undefined>(undefined);
     const [showSubdivisions, setShowSubdivisions] = useState(false);
     const [beatCounter, setBeatCounter] = useState(defaultBeatCounter);
     const [volume, setVolume] = useState(1);
     const [soundOption, setSoundOption] = useState(SoundOption.Full);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const resolvedTheme = useResolvedTheme();
+    const { beat, isRunning, toggle } = useMetronomeScheduler({
+        bpm,
+        beatsPerBar: beatCounter,
+        showSubdivisions,
+        volume,
+        soundOption,
+    });
     //#endregion
 
     //#region Derived values
@@ -59,35 +62,6 @@ const BpmContainer = () => {
             return result;
         });
     };
-    //#endregion
-
-    //#region Effects
-    useEffect(() => {
-        if (isRunning) {
-            intervalRef.current = setInterval(() => {
-                setBeat((prev) =>
-                    prev !== undefined ? (prev + 1) % tickCount : 0,
-                );
-            }, msPerMinute / tickRate);
-        } else if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-        }
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-        };
-    }, [isRunning, tickRate, tickCount]);
-
-    useEffect(() => {
-        setBeat((prev) => {
-            if (prev === undefined) {
-                return prev;
-            }
-            return showSubdivisions ? prev * 2 : Math.floor(prev / 2);
-        });
-    }, [showSubdivisions]);
     //#endregion
 
     //#region Render
@@ -140,10 +114,7 @@ const BpmContainer = () => {
                     aria-label={
                         isRunning ? "Pause metronome" : "Start metronome"
                     }
-                    onClick={() => {
-                        setBeat(0);
-                        setIsRunning((prev) => !prev);
-                    }}
+                    onClick={toggle}
                 >
                     {isRunning ? (
                         <Pause className="size-7" />
@@ -166,13 +137,6 @@ const BpmContainer = () => {
                     +10
                 </Button>
             </div>
-            <BpmAudio
-                beat={beat}
-                isRunning={isRunning}
-                volume={volume}
-                soundOption={soundOption}
-                showSubdivisions={showSubdivisions}
-            />
             <div className="grid w-full grid-cols-1 gap-x-8 gap-y-6 border-t pt-5 sm:grid-cols-[minmax(0,1fr)_1px_minmax(0,1fr)]">
                 <section className="flex flex-col gap-4">
                     <h2 className="text-sm font-medium">Rhythm</h2>
