@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { msPerSecond, sPerMinute } from "../constants";
 
 interface BpmCircleProps {
@@ -58,7 +58,7 @@ export default function BpmCircle({
                           }
                         : {}),
                     "--pulse-duration": `${pulseInterval}s`,
-                } as React.CSSProperties & Record<string, string>
+                } as CSSProperties & Record<string, string>
             }
         />
     );

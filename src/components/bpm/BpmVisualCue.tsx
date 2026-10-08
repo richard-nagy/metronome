@@ -25,7 +25,13 @@ const BpmVisualCue = ({
                         bpm={bpm}
                         color={color}
                         first={i === 0}
-                        active={isRunning && beat === i}
+                        active={
+                            isRunning &&
+                            (beat === i ||
+                                (showSubdivisions &&
+                                    i % 2 === 0 &&
+                                    beat === i + 1))
+                        }
                         subdivision={showSubdivisions && i % 2 !== 0}
                     />
                 ))}
