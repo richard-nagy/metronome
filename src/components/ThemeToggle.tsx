@@ -9,13 +9,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Theme } from "@/types/types";
 import { Moon, Sun } from "lucide-react";
-import { useState } from "react";
 import { useTheme } from "./ui/themeHook";
 
 export function ThemeToggle() {
-    const { setTheme } = useTheme();
-
-    const [position, setPosition] = useState("system");
+    const { theme, setTheme } = useTheme();
 
     return (
         <DropdownMenu>
@@ -29,11 +26,8 @@ export function ThemeToggle() {
             <DropdownMenuContent className="w-56" align="start">
                 <DropdownMenuLabel>Theme</DropdownMenuLabel>
                 <DropdownMenuRadioGroup
-                    value={position}
-                    onValueChange={(value) => {
-                        setPosition(value);
-                        setTheme(value as Theme);
-                    }}
+                    value={theme}
+                    onValueChange={(value) => setTheme(value as Theme)}
                 >
                     <DropdownMenuRadioItem value={Theme.System}>
                         System

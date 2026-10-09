@@ -20,20 +20,28 @@ export function ThemeProvider({
 
     useEffect(() => {
         const root = window.document.documentElement;
-        root.classList.remove(Theme.Light, Theme.Dark);
+        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+        const applyTheme = () => {
+            root.classList.remove(Theme.Light, Theme.Dark);
 
-        if (theme === Theme.System) {
-            const systemTheme = window.matchMedia(
-                "(prefers-color-scheme: dark)",
-            ).matches
-                ? Theme.Dark
-                : Theme.Light;
+            const resolvedTheme =
+                theme === Theme.System
+                    ? mediaQuery.matches
+                        ? Theme.Dark
+                        : Theme.Light
+                    : theme;
 
-            root.classList.add(systemTheme);
+            root.classList.add(resolvedTheme);
+        };
+
+        applyTheme();
+
+        if (theme !== Theme.System) {
             return;
         }
 
-        root.classList.add(theme);
+        mediaQuery.addEventListener("change", applyTheme);
+        return () => mediaQuery.removeEventListener("change", applyTheme);
     }, [theme]);
 
     const value = {
