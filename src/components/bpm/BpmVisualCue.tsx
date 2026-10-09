@@ -21,7 +21,7 @@ const BpmVisualCue = ({
     color,
 }: BpmVisualCueProps) => {
     return (
-        <div className="relative flex h-40 w-80 flex-col items-center justify-center gap-2">
+        <div className="relative flex h-40 w-80 flex-col items-center justify-center gap-2 mt-2">
             {Array.from({ length: Math.ceil(beatCounter / 4) }, (_, row) => {
                 const firstBeat = row * 4;
                 const beatsInRow = Math.min(4, beatCounter - firstBeat);
@@ -83,7 +83,7 @@ const BpmVisualCue = ({
                 <>
                     <div
                         aria-hidden="true"
-                        className="pointer-events-none absolute left-1/2 top-1/2 z-10 size-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/90"
+                        className="pointer-events-none absolute left-1/2 top-1/2 z-10 size-36 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/90"
                     />
                     <span
                         className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center text-7xl font-bold tabular-nums"
