@@ -9,7 +9,7 @@ import {
     Volume2,
     VolumeX,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import {
     defaultBeatCounter,
     defaultBpm,
@@ -19,6 +19,11 @@ import {
     minBpm,
 } from "../constants";
 import { Button } from "../ui/button";
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
+} from "../ui/input-group";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Slider } from "../ui/slider";
@@ -61,11 +66,23 @@ const BpmContainer = () => {
             return result;
         });
     };
+
+    const onInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        let value = parseInt(e.target.value);
+
+        if (value < minBpm) {
+            value = minBpm;
+        } else if (value > maxBpm) {
+            value = maxBpm;
+        }
+
+        setBpm(value);
+    };
     //#endregion
 
     //#region Render
     return (
-        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-5 px-4">
+        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4 px-4">
             <BpmVisualCue
                 beatCounter={beatCounter}
                 bpm={tickRate}
@@ -74,14 +91,25 @@ const BpmContainer = () => {
                 showSubdivisions={showSubdivisions}
                 color={color}
             />
-            <h1 className="text-center text-balance mb-1">
-                <span style={{ color }} className="font-bold text-4xl">
-                    {bpm}{" "}
-                </span>
-                <span className="font-light text-secondary-foreground text-3xl">
-                    BPM
-                </span>
-            </h1>
+            <div className="flex flex-row gap-2 items-center">
+                <InputGroup className="w-40 h-14 ">
+                    <InputGroupInput
+                        aria-label=""
+                        type="number"
+                        max={300}
+                        min={40}
+                        className="text-4xl md:text-4xl font-bold text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        value={bpm}
+                        style={{ color }}
+                        onChange={onInputChange}
+                    />
+                    <InputGroupAddon align="inline-end">
+                        <span className="font-medium text-secondary-foreground text-3xl">
+                            BPM
+                        </span>
+                    </InputGroupAddon>
+                </InputGroup>
+            </div>
             <Slider
                 aria-label="Tempo in beats per minute"
                 value={[bpm]}
@@ -89,7 +117,7 @@ const BpmContainer = () => {
                 max={maxBpm}
                 step={1}
                 thumbColor={color}
-                className="w-full"
+                className="w-82 mt-2 mb-2"
                 onValueChange={(value) => setBpm(value[0] ?? minBpm)}
                 onDoubleClick={() => setBpm(defaultBpm)}
             />
@@ -206,7 +234,7 @@ const BpmContainer = () => {
                         <Slider
                             aria-label="Output volume"
                             id="volume"
-                            className="min-w-0 flex-1"
+                            className="min-w-0 w-40"
                             min={0}
                             max={1}
                             step={0.1}
