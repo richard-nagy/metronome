@@ -17,25 +17,49 @@ const BpmVisualCue = ({
     color,
 }: BpmVisualCueProps) => {
     return (
-        <div className="w-74 h-74 flex mb-4 justify-center items-center">
-            <div className="gap-4 flex flex-wrap justify-center">
-                {Array.from({ length: beatCounter }, (_, i) => (
+        <div
+            className="grid h-40 w-80 place-content-center gap-2"
+            style={{
+                gridTemplateColumns: "repeat(4, 4rem)",
+                gridAutoRows: "4rem",
+            }}
+        >
+            {Array.from({ length: beatCounter }, (_, i) => (
+                <div
+                    key={i}
+                    className="relative flex size-16 items-center justify-center"
+                >
                     <BpmCircle
-                        key={i}
+                        text={(i + 1).toString()}
                         bpm={bpm}
                         color={color}
                         first={i === 0}
                         active={
                             isRunning &&
-                            (beat === i ||
-                                (showSubdivisions &&
-                                    i % 2 === 0 &&
-                                    beat === i + 1))
+                            (showSubdivisions
+                                ? beat === i * 2 || beat === i * 2 + 1
+                                : beat === i)
                         }
-                        subdivision={showSubdivisions && i % 2 !== 0}
+                        subdivision={false}
+                        visible
                     />
-                ))}
-            </div>
+                    <div className="absolute left-15.5 top-1/2 -translate-y-1/2">
+                        <BpmCircle
+                            text=""
+                            bpm={bpm}
+                            color={color}
+                            first={false}
+                            active={
+                                isRunning &&
+                                showSubdivisions &&
+                                beat === i * 2 + 1
+                            }
+                            subdivision
+                            visible={showSubdivisions}
+                        />
+                    </div>
+                </div>
+            ))}
         </div>
     );
 };

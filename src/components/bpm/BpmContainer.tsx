@@ -45,7 +45,6 @@ const BpmContainer = () => {
     //#endregion
 
     //#region Derived values
-    const tickCount = beatCounter * (showSubdivisions ? 2 : 1);
     const tickRate = bpm * (showSubdivisions ? 2 : 1);
     const color = getColorFromRange(bpm, minBpm, maxBpm, resolvedTheme);
     //#endregion
@@ -68,7 +67,7 @@ const BpmContainer = () => {
     return (
         <div className="mx-auto flex w-full max-w-md flex-col items-center gap-5 px-4">
             <BpmVisualCue
-                beatCounter={tickCount}
+                beatCounter={beatCounter}
                 bpm={tickRate}
                 beat={beat}
                 isRunning={isRunning}
