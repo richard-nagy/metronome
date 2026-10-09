@@ -45,7 +45,7 @@ const BpmContainer = () => {
         soundOption,
     } = settings;
     const resolvedTheme = useResolvedTheme();
-    const { beat, isRunning, countdown, isCountingIn, toggle, stop } =
+    const { beat, isRunning, countdown, isCountingIn, toggle } =
         useMetronomeScheduler({
             bpm,
             beatsPerBar: beatCounter,
@@ -63,10 +63,9 @@ const BpmContainer = () => {
         beatCounter?: number;
     }) => {
         updateSettings(updates);
-        if (isRunning || isCountingIn) {
-            stop();
-        }
     };
+
+    const isPlaybackActive = isRunning || isCountingIn;
 
     //#endregion
 
@@ -117,6 +116,7 @@ const BpmContainer = () => {
                         className="text-4xl md:text-4xl font-bold text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         value={bpm}
                         style={{ color }}
+                        disabled={isPlaybackActive}
                         onChange={onInputChange}
                     />
                     <InputGroupAddon align="inline-end">
@@ -134,6 +134,7 @@ const BpmContainer = () => {
                 step={1}
                 thumbColor={color}
                 className="w-82 mt-2 mb-2"
+                disabled={isPlaybackActive}
                 onValueChange={(value) =>
                     updateTimingSettings({ bpm: value[0] ?? minBpm })
                 }
@@ -143,6 +144,7 @@ const BpmContainer = () => {
                 <Button
                     className="h-14 w-14"
                     variant="outline"
+                    disabled={isPlaybackActive}
                     onClick={() => onButtonChange(-10)}
                 >
                     -10
@@ -150,6 +152,7 @@ const BpmContainer = () => {
                 <Button
                     className="h-14 w-14"
                     variant="outline"
+                    disabled={isPlaybackActive}
                     onClick={() => onButtonChange(-1)}
                 >
                     -1
@@ -173,6 +176,7 @@ const BpmContainer = () => {
                 <Button
                     className="h-14 w-14"
                     variant="outline"
+                    disabled={isPlaybackActive}
                     onClick={() => onButtonChange(1)}
                 >
                     +1
@@ -180,6 +184,7 @@ const BpmContainer = () => {
                 <Button
                     className="h-14 w-14"
                     variant="outline"
+                    disabled={isPlaybackActive}
                     onClick={() => onButtonChange(10)}
                 >
                     +10
@@ -199,7 +204,10 @@ const BpmContainer = () => {
                                 className="size-9"
                                 variant="outline"
                                 aria-label="Decrease beats per bar"
-                                disabled={beatCounter <= minBeatCounter}
+                                disabled={
+                                    isPlaybackActive ||
+                                    beatCounter <= minBeatCounter
+                                }
                                 onClick={() =>
                                     updateTimingSettings({
                                         beatCounter: Math.max(
@@ -218,7 +226,10 @@ const BpmContainer = () => {
                                 className="size-9"
                                 variant="outline"
                                 aria-label="Increase beats per bar"
-                                disabled={beatCounter >= maxBeatCounter}
+                                disabled={
+                                    isPlaybackActive ||
+                                    beatCounter >= maxBeatCounter
+                                }
                                 onClick={() =>
                                     updateTimingSettings({
                                         beatCounter: Math.min(
