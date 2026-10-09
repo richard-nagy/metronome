@@ -6,6 +6,7 @@ interface UseMetronomeSchedulerProps {
     bpm: number;
     beatsPerBar: number;
     showSubdivisions: boolean;
+    countInEnabled: boolean;
     volume: number;
     soundOption: SoundOption;
 }
@@ -13,21 +14,60 @@ interface UseMetronomeSchedulerProps {
 const lookAheadSeconds = 0.1;
 const schedulerIntervalMs = 25;
 
+function createClickSource(
+    audioContext: AudioContext,
+    buffer: AudioBuffer | null,
+    when: number,
+    clickVolume: number,
+): AudioScheduledSourceNode {
+    const gain = audioContext.createGain();
+    gain.gain.setValueAtTime(clickVolume, when);
+    gain.connect(audioContext.destination);
+
+    let source: AudioScheduledSourceNode;
+    let oscillatorStopTime: number | undefined;
+
+    if (buffer) {
+        const bufferSource = audioContext.createBufferSource();
+        bufferSource.buffer = buffer;
+        bufferSource.connect(gain);
+        source = bufferSource;
+    } else {
+        const oscillator = audioContext.createOscillator();
+        oscillator.frequency.setValueAtTime(880, when);
+        gain.gain.setValueAtTime(clickVolume, when);
+        gain.gain.exponentialRampToValueAtTime(0.001, when + 0.04);
+        oscillator.connect(gain);
+        source = oscillator;
+        oscillatorStopTime = when + 0.04;
+    }
+
+    source.start(when);
+    if (oscillatorStopTime !== undefined) {
+        source.stop(oscillatorStopTime);
+    }
+
+    return source;
+}
+
 export function useMetronomeScheduler({
     bpm,
     beatsPerBar,
     showSubdivisions,
+    countInEnabled,
     volume,
     soundOption,
 }: UseMetronomeSchedulerProps) {
     const [isRunning, setIsRunning] = useState(false);
     const [beat, setBeat] = useState<number | undefined>(undefined);
+    const [countdown, setCountdown] = useState<number | null>(null);
 
     const audioContextRef = useRef<AudioContext | null>(null);
     const audioBufferRef = useRef<AudioBuffer | null>(null);
     const audioBufferPromiseRef = useRef<Promise<AudioBuffer | null> | null>(
         null,
     );
+    const countInTimerRef = useRef<number | undefined>(undefined);
     const beatRef = useRef<number | undefined>(undefined);
     const configRef = useRef({
         bpm,
@@ -50,9 +90,47 @@ export function useMetronomeScheduler({
         setBeat(nextBeat);
     };
 
+    const stop = () => {
+        if (countInTimerRef.current !== undefined) {
+            window.clearTimeout(countInTimerRef.current);
+            countInTimerRef.current = undefined;
+        }
+        setCountdown(null);
+        setIsRunning(false);
+    };
+
+    const playCountInClick = () => {
+        const audioContext = audioContextRef.current;
+        const clickVolume = configRef.current.volume;
+        if (!audioContext || clickVolume <= 0) {
+            return;
+        }
+
+        createClickSource(
+            audioContext,
+            audioBufferRef.current,
+            audioContext.currentTime,
+            clickVolume,
+        );
+    };
+
+    const beginCountIn = (value: number, intervalMs: number) => {
+        setCountdown(value);
+        playCountInClick();
+        countInTimerRef.current = window.setTimeout(() => {
+            if (value > 1) {
+                beginCountIn(value - 1, intervalMs);
+            } else {
+                countInTimerRef.current = undefined;
+                setCountdown(null);
+                setIsRunning(true);
+            }
+        }, intervalMs);
+    };
+
     const toggle = () => {
-        if (isRunning) {
-            setIsRunning(false);
+        if (isRunning || countdown !== null) {
+            stop();
             return;
         }
 
@@ -81,7 +159,12 @@ export function useMetronomeScheduler({
         void audioContext.resume();
         beatRef.current = undefined;
         setBeat(undefined);
-        setIsRunning(true);
+        if (countInEnabled) {
+            const countInStart = bpm < 100 ? 3 : bpm > 200 ? 5 : 4;
+            beginCountIn(countInStart, msPerMinute / bpm);
+        } else {
+            setIsRunning(true);
+        }
     };
 
     useEffect(() => {
@@ -104,34 +187,13 @@ export function useMetronomeScheduler({
         const scheduledSources = new Map<AudioScheduledSourceNode, number>();
 
         const scheduleClick = (when: number, clickVolume: number) => {
-            const gain = audioContext.createGain();
-            gain.gain.setValueAtTime(clickVolume, when);
-            gain.connect(audioContext.destination);
-
-            const buffer = audioBufferRef.current;
-            let source: AudioScheduledSourceNode;
-            let oscillatorStopTime: number | undefined;
-
-            if (buffer) {
-                const bufferSource = audioContext.createBufferSource();
-                bufferSource.buffer = buffer;
-                bufferSource.connect(gain);
-                source = bufferSource;
-            } else {
-                const oscillator = audioContext.createOscillator();
-                oscillator.frequency.setValueAtTime(880, when);
-                gain.gain.setValueAtTime(clickVolume, when);
-                gain.gain.exponentialRampToValueAtTime(0.001, when + 0.04);
-                oscillator.connect(gain);
-                source = oscillator;
-                oscillatorStopTime = when + 0.04;
-            }
-
+            const source = createClickSource(
+                audioContext,
+                audioBufferRef.current,
+                when,
+                clickVolume,
+            );
             source.onended = () => scheduledSources.delete(source);
-            source.start(when);
-            if (oscillatorStopTime !== undefined) {
-                source.stop(oscillatorStopTime);
-            }
             scheduledSources.set(source, when);
         };
 
@@ -281,6 +343,9 @@ export function useMetronomeScheduler({
 
     useEffect(
         () => () => {
+            if (countInTimerRef.current !== undefined) {
+                window.clearTimeout(countInTimerRef.current);
+            }
             const audioContext = audioContextRef.current;
             if (audioContext && audioContext.state !== "closed") {
                 void audioContext.close();
@@ -289,5 +354,12 @@ export function useMetronomeScheduler({
         [],
     );
 
-    return { beat, isRunning, toggle };
+    return {
+        beat,
+        isRunning,
+        countdown,
+        isCountingIn: countdown !== null,
+        toggle,
+        stop,
+    };
 }
