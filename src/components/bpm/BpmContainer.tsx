@@ -14,8 +14,12 @@ import {
     defaultBpm,
     maxBeatCounter,
     maxBpm,
+    maxBpmRampAmount,
+    maxBpmRampBars,
     minBeatCounter,
     minBpm,
+    minBpmRampAmount,
+    minBpmRampBars,
 } from "../constants";
 import { Button } from "../ui/button";
 import {
@@ -37,6 +41,9 @@ const BpmContainer = () => {
     const { settings, updateSettings } = useMetronomeSettings();
     const {
         bpm,
+        bpmRampEnabled,
+        bpmRampBars,
+        bpmRampAmount,
         showSubdivisions,
         showNumbers,
         countInEnabled,
@@ -48,11 +55,15 @@ const BpmContainer = () => {
     const { beat, isRunning, countdown, isCountingIn, toggle } =
         useMetronomeScheduler({
             bpm,
+            bpmRampEnabled,
+            bpmRampBars,
+            bpmRampAmount,
             beatsPerBar: beatCounter,
             showSubdivisions,
             countInEnabled,
             volume,
             soundOption,
+            onBpmChange: (nextBpm) => updateSettings({ bpm: nextBpm }),
         });
 
     const updateTimingSettings = (updates: {
@@ -191,7 +202,66 @@ const BpmContainer = () => {
                 </Button>
             </div>
             <div className="grid w-full grid-cols-1 gap-x-8 gap-y-6 border-t pt-5 sm:grid-cols-[minmax(0,1fr)_1px_minmax(0,1fr)]">
-                <section className="flex flex-col gap-4">
+                <section className="flex flex-col gap-4 sm:col-start-1 sm:row-start-1">
+                    <h2 className="text-sm font-medium">Sound</h2>
+                    <div className="flex items-center gap-3">
+                        <Button
+                            className="size-9 shrink-0"
+                            variant="ghost"
+                            aria-label={volume === 0 ? "Unmute" : "Mute"}
+                            onClick={() =>
+                                updateSettings({ volume: volume === 0 ? 1 : 0 })
+                            }
+                        >
+                            {volume === 0 && <VolumeX className="size-5" />}
+                            {volume > 0 && volume <= 0.5 && (
+                                <Volume1 className="size-5" />
+                            )}
+                            {volume > 0.5 && <Volume2 className="size-5" />}
+                        </Button>
+                        <Slider
+                            aria-label="Output volume"
+                            id="volume"
+                            className="min-w-0 w-40"
+                            min={0}
+                            max={1}
+                            step={0.1}
+                            value={[volume]}
+                            onValueChange={(value) =>
+                                updateSettings({ volume: value[0] ?? 0 })
+                            }
+                            onDoubleClick={() => updateSettings({ volume: 1 })}
+                        />
+                    </div>
+                    <RadioGroup
+                        value={soundOption}
+                        aria-label="Accent pattern"
+                        className="gap-2"
+                        onValueChange={(value) =>
+                            updateSettings({
+                                soundOption: value as SoundOption,
+                            })
+                        }
+                    >
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value={SoundOption.All} id="r1" />
+                            <Label htmlFor="r1">On all beats</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value={SoundOption.Full} id="r2" />
+                            <Label htmlFor="r2">On full beats</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value={SoundOption.First} id="r3" />
+                            <Label htmlFor="r3">On first beat</Label>
+                        </div>
+                    </RadioGroup>
+                </section>
+                <div
+                    aria-hidden="true"
+                    className="h-px w-full bg-border sm:hidden"
+                />
+                <section className="flex flex-col gap-4 sm:col-start-3 sm:row-start-1">
                     <h2 className="text-sm font-medium">Rhythm</h2>
                     <div className="flex items-center justify-between gap-4">
                         <Label id="beat-number-label">Beats per bar</Label>
@@ -278,61 +348,106 @@ const BpmContainer = () => {
                         />
                     </div>
                 </section>
-                <div aria-hidden="true" className="hidden bg-border sm:block" />
-                <section className="flex flex-col gap-4">
-                    <h2 className="text-sm font-medium">Sound</h2>
-                    <div className="flex items-center gap-3">
-                        <Button
-                            className="size-9 shrink-0"
-                            variant="ghost"
-                            aria-label={volume === 0 ? "Unmute" : "Mute"}
-                            onClick={() =>
-                                updateSettings({ volume: volume === 0 ? 1 : 0 })
+                <div
+                    aria-hidden="true"
+                    className="hidden bg-border sm:col-start-2 sm:row-start-1 sm:block"
+                />
+                <div
+                    aria-hidden="true"
+                    className="h-px w-full bg-border sm:col-span-full sm:row-start-2"
+                />
+                <section className="flex flex-col gap-4 sm:col-span-full sm:row-start-3">
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="bpm-ramp-enabled">Tempo ramp</Label>
+                        <Switch
+                            id="bpm-ramp-enabled"
+                            checked={bpmRampEnabled}
+                            disabled={isPlaybackActive}
+                            onCheckedChange={(checked) =>
+                                updateSettings({ bpmRampEnabled: checked })
                             }
-                        >
-                            {volume === 0 && <VolumeX className="size-5" />}
-                            {volume > 0 && volume <= 0.5 && (
-                                <Volume1 className="size-5" />
-                            )}
-                            {volume > 0.5 && <Volume2 className="size-5" />}
-                        </Button>
-                        <Slider
-                            aria-label="Output volume"
-                            id="volume"
-                            className="min-w-0 w-40"
-                            min={0}
-                            max={1}
-                            step={0.1}
-                            value={[volume]}
-                            onValueChange={(value) =>
-                                updateSettings({ volume: value[0] ?? 0 })
-                            }
-                            onDoubleClick={() => updateSettings({ volume: 1 })}
                         />
                     </div>
-                    <RadioGroup
-                        value={soundOption}
-                        aria-label="Accent pattern"
-                        className="gap-2"
-                        onValueChange={(value) =>
-                            updateSettings({
-                                soundOption: value as SoundOption,
-                            })
-                        }
-                    >
-                        <div className="flex items-center gap-3">
-                            <RadioGroupItem value={SoundOption.All} id="r1" />
-                            <Label htmlFor="r1">On all beats</Label>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between gap-4">
+                            <Label id="bpm-ramp-bars-label">
+                                Increase every
+                            </Label>
+                            <div
+                                role="group"
+                                aria-labelledby="bpm-ramp-bars-label"
+                                className="flex items-center gap-1"
+                            >
+                                <Button
+                                    className="size-9"
+                                    variant="outline"
+                                    aria-label="Decrease bars between tempo changes"
+                                    disabled={
+                                        !bpmRampEnabled ||
+                                        isPlaybackActive ||
+                                        bpmRampBars <= minBpmRampBars
+                                    }
+                                    onClick={() =>
+                                        updateSettings({
+                                            bpmRampBars: Math.max(
+                                                minBpmRampBars,
+                                                bpmRampBars - 1,
+                                            ),
+                                        })
+                                    }
+                                >
+                                    <Minus className="size-4" />
+                                </Button>
+                                <output className="min-w-16 text-center font-medium tabular-nums">
+                                    {bpmRampBars}{" "}
+                                    {bpmRampBars === 1 ? "bar" : "bars"}
+                                </output>
+                                <Button
+                                    className="size-9"
+                                    variant="outline"
+                                    aria-label="Increase bars between tempo changes"
+                                    disabled={
+                                        !bpmRampEnabled ||
+                                        isPlaybackActive ||
+                                        bpmRampBars >= maxBpmRampBars
+                                    }
+                                    onClick={() =>
+                                        updateSettings({
+                                            bpmRampBars: Math.min(
+                                                maxBpmRampBars,
+                                                bpmRampBars + 1,
+                                            ),
+                                        })
+                                    }
+                                >
+                                    <Plus className="size-4" />
+                                </Button>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <RadioGroupItem value={SoundOption.Full} id="r2" />
-                            <Label htmlFor="r2">On full beats</Label>
+                        <div className="flex items-center justify-between">
+                            <Label id="bpm-ramp-amount-label">BPM change</Label>
+                            <output
+                                aria-labelledby="bpm-ramp-amount-label"
+                                className="font-medium tabular-nums"
+                            >
+                                {bpmRampAmount > 0 ? "+" : ""}
+                                {bpmRampAmount} BPM
+                            </output>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <RadioGroupItem value={SoundOption.First} id="r3" />
-                            <Label htmlFor="r3">On first beat</Label>
-                        </div>
-                    </RadioGroup>
+                        <Slider
+                            aria-label="BPM change per interval"
+                            value={[bpmRampAmount]}
+                            min={minBpmRampAmount}
+                            max={maxBpmRampAmount}
+                            step={1}
+                            disabled={!bpmRampEnabled || isPlaybackActive}
+                            onValueChange={(value) =>
+                                updateSettings({
+                                    bpmRampAmount: value[0] ?? 10,
+                                })
+                            }
+                        />
+                    </div>
                 </section>
             </div>
         </div>

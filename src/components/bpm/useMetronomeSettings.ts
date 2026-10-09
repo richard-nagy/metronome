@@ -3,14 +3,23 @@ import { useEffect, useState } from "react";
 import {
     defaultBeatCounter,
     defaultBpm,
+    defaultBpmRampAmount,
+    defaultBpmRampBars,
+    maxBpmRampAmount,
+    maxBpmRampBars,
     maxBeatCounter,
     maxBpm,
+    minBpmRampAmount,
+    minBpmRampBars,
     minBeatCounter,
     minBpm,
 } from "../constants";
 
 interface MetronomeSettings {
     bpm: number;
+    bpmRampEnabled: boolean;
+    bpmRampBars: number;
+    bpmRampAmount: number;
     showSubdivisions: boolean;
     showNumbers: boolean;
     countInEnabled: boolean;
@@ -23,6 +32,9 @@ const settingsStorageKey = "metronome-settings";
 
 const defaultSettings: MetronomeSettings = {
     bpm: defaultBpm,
+    bpmRampEnabled: false,
+    bpmRampBars: defaultBpmRampBars,
+    bpmRampAmount: defaultBpmRampAmount,
     showSubdivisions: false,
     showNumbers: false,
     countInEnabled: true,
@@ -48,6 +60,29 @@ function loadSettings(): MetronomeSettings {
                 typeof stored.bpm === "number" && Number.isFinite(stored.bpm)
                     ? Math.min(maxBpm, Math.max(minBpm, Math.round(stored.bpm)))
                     : defaultSettings.bpm,
+            bpmRampEnabled:
+                typeof stored.bpmRampEnabled === "boolean"
+                    ? stored.bpmRampEnabled
+                    : defaultSettings.bpmRampEnabled,
+            bpmRampBars:
+                typeof stored.bpmRampBars === "number" &&
+                Number.isInteger(stored.bpmRampBars)
+                    ? Math.min(
+                          maxBpmRampBars,
+                          Math.max(minBpmRampBars, stored.bpmRampBars),
+                      )
+                    : defaultSettings.bpmRampBars,
+            bpmRampAmount:
+                typeof stored.bpmRampAmount === "number" &&
+                Number.isFinite(stored.bpmRampAmount)
+                    ? Math.min(
+                          maxBpmRampAmount,
+                          Math.max(
+                              minBpmRampAmount,
+                              Math.round(stored.bpmRampAmount),
+                          ),
+                      )
+                    : defaultSettings.bpmRampAmount,
             showSubdivisions:
                 typeof stored.showSubdivisions === "boolean"
                     ? stored.showSubdivisions

@@ -1,14 +1,18 @@
 import { SoundOption } from "@/types/types";
 import { useEffect, useRef, useState } from "react";
-import { msPerMinute } from "../constants";
+import { maxBpm, minBpm, msPerMinute } from "../constants";
 
 interface UseMetronomeSchedulerProps {
     bpm: number;
+    bpmRampEnabled: boolean;
+    bpmRampBars: number;
+    bpmRampAmount: number;
     beatsPerBar: number;
     showSubdivisions: boolean;
     countInEnabled: boolean;
     volume: number;
     soundOption: SoundOption;
+    onBpmChange: (bpm: number) => void;
 }
 
 const lookAheadSeconds = 0.1;
@@ -52,11 +56,15 @@ function createClickSource(
 
 export function useMetronomeScheduler({
     bpm,
+    bpmRampEnabled,
+    bpmRampBars,
+    bpmRampAmount,
     beatsPerBar,
     showSubdivisions,
     countInEnabled,
     volume,
     soundOption,
+    onBpmChange,
 }: UseMetronomeSchedulerProps) {
     const [isRunning, setIsRunning] = useState(false);
     const [beat, setBeat] = useState<number | undefined>(undefined);
@@ -71,18 +79,26 @@ export function useMetronomeScheduler({
     const beatRef = useRef<number | undefined>(undefined);
     const configRef = useRef({
         bpm,
+        bpmRampEnabled,
+        bpmRampBars,
+        bpmRampAmount,
         beatsPerBar,
         showSubdivisions,
         volume,
         soundOption,
+        onBpmChange,
     });
 
     configRef.current = {
         bpm,
+        bpmRampEnabled,
+        bpmRampBars,
+        bpmRampAmount,
         beatsPerBar,
         showSubdivisions,
         volume,
         soundOption,
+        onBpmChange,
     };
 
     const publishBeat = (nextBeat: number) => {
@@ -183,6 +199,7 @@ export function useMetronomeScheduler({
         let nextBeatTime = 0;
         let lastBeatTime = audioContext.currentTime;
         let observedConfig = configRef.current;
+        let completedBars = 0;
         const visualTimers = new Set<number>();
         const scheduledSources = new Map<AudioScheduledSourceNode, number>();
 
@@ -294,6 +311,26 @@ export function useMetronomeScheduler({
                         if (!cancelled) {
                             publishBeat(scheduledBeat);
                             lastBeatTime = scheduledTime;
+
+                            if (
+                                scheduledBeat === tickCount - 1 &&
+                                config.bpmRampEnabled
+                            ) {
+                                completedBars += 1;
+                                if (completedBars >= config.bpmRampBars) {
+                                    completedBars = 0;
+                                    const nextBpm = Math.min(
+                                        maxBpm,
+                                        Math.max(
+                                            minBpm,
+                                            config.bpm + config.bpmRampAmount,
+                                        ),
+                                    );
+                                    if (nextBpm !== config.bpm) {
+                                        configRef.current.onBpmChange(nextBpm);
+                                    }
+                                }
+                            }
                         }
                     },
                     Math.max(0, (scheduledTime - currentTime) * 1000),
