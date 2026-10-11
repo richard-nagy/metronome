@@ -5,7 +5,7 @@ import checker from "vite-plugin-checker";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    base: '/metronome/',
+    base: "/metronome/",
     plugins: [
         react(),
         tailwindcss(),
