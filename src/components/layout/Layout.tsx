@@ -7,8 +7,8 @@ export default function Layout() {
             <header className="sticky top-0 z-50 p-2 ml-auto flex w-full items-center justify-between bg-primary-foreground">
                 <div className="flex items-center gap-2 font-medium">
                     <img
-                        src="/metronome.svg"
-                        alt=""
+                        src={`${import.meta.env.BASE_URL}metronome.svg`}
+                        alt="Metronome logo"
                         aria-hidden="true"
                         className="size-8"
                     />
