@@ -19,7 +19,7 @@ import {
     minBpmRampBars,
 } from "../constants";
 
-interface MetronomeSettings {
+export interface MetronomeSettings {
     bpm: number;
     bpmRampEnabled: boolean;
     bpmRampBars: number;

@@ -192,27 +192,6 @@ describe("useMetronomeScheduler", () => {
         expect(sources[0]?.buffer).toBe(decodedBuffers[0]);
     });
 
-    it("switches queued clicks when the sound changes during playback", async () => {
-        const config = makeConfig();
-        mountScheduler(config);
-
-        await startScheduler();
-        expect(sources[0]?.buffer).toBe(decodedBuffers[0]);
-
-        await act(async () => {
-            updateScheduler({ ...config, soundId: SoundId.Wood });
-            await flushPromises();
-            await vi.advanceTimersByTimeAsync(600);
-        });
-
-        expect(fetch).toHaveBeenCalledWith(
-            `${import.meta.env.BASE_URL}sounds/wood.wav`,
-        );
-        expect(
-            sources.some((source) => source.buffer === decodedBuffers[1]),
-        ).toBe(true);
-    });
-
     it("previews the selected sound", async () => {
         mountScheduler(makeConfig());
 

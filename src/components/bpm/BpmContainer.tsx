@@ -3,6 +3,7 @@ import { SoundId, SubdivisionMode, TimeSignature } from "@/types/types";
 import { getTimeSignatureConfig, maxBpm, minBpm } from "../constants";
 import { useResolvedTheme } from "../ui/useResolvedTheme";
 import { DisplaySettings } from "./DisplaySettings";
+import { PresetsSettings } from "./PresetsSettings";
 import { RhythmSettings } from "./RhythmSettings";
 import { SoundSettings } from "./SoundSettings";
 import { TempoControls } from "./TempoControls";
@@ -159,6 +160,13 @@ const BpmContainer = () => {
                     }
                 />
             </div>
+            <PresetsSettings
+                settings={settings}
+                isPlaybackActive={isPlaybackActive}
+                onApplyPreset={(presetSettings) =>
+                    updateSettings(presetSettings)
+                }
+            />
         </div>
     );
     //#endregion
