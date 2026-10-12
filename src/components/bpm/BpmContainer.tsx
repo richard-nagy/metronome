@@ -120,7 +120,7 @@ const BpmContainer = () => {
             <div className="flex flex-row gap-2 items-center">
                 <InputGroup className="w-40 h-14 ">
                     <InputGroupInput
-                        aria-label=""
+                        aria-label="Tempo in beats per minute"
                         type="number"
                         max={300}
                         min={40}
