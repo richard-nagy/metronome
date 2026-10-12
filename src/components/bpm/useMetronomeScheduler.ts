@@ -1,4 +1,4 @@
-import { SoundOption } from "@/types/types";
+import { SoundId, SoundOption } from "@/types/types";
 import { useEffect, useRef, useState } from "react";
 import { maxBpm, minBpm, msPerMinute } from "../constants";
 
@@ -13,6 +13,7 @@ interface UseMetronomeSchedulerProps {
     countInEnabled: boolean;
     volume: number;
     soundOption: SoundOption;
+    soundId: SoundId;
     onBpmChange: (bpm: number) => void;
 }
 
@@ -66,6 +67,7 @@ export function useMetronomeScheduler({
     countInEnabled,
     volume,
     soundOption,
+    soundId,
     onBpmChange,
 }: UseMetronomeSchedulerProps) {
     const [isRunning, setIsRunning] = useState(false);
@@ -73,10 +75,12 @@ export function useMetronomeScheduler({
     const [countdown, setCountdown] = useState<number | null>(null);
 
     const audioContextRef = useRef<AudioContext | null>(null);
-    const audioBufferRef = useRef<AudioBuffer | null>(null);
-    const audioBufferPromiseRef = useRef<Promise<AudioBuffer | null> | null>(
-        null,
-    );
+    const audioBuffersRef = useRef<Partial<Record<SoundId, AudioBuffer>>>({});
+    const audioBufferPromisesRef = useRef<
+        Partial<Record<SoundId, Promise<AudioBuffer | null>>>
+    >({});
+    const startRequestRef = useRef(0);
+    const isLoadingSoundRef = useRef(false);
     const countInTimerRef = useRef<number | undefined>(undefined);
     const beatRef = useRef<number | undefined>(undefined);
     const configRef = useRef({
@@ -87,8 +91,10 @@ export function useMetronomeScheduler({
         beatsPerBar,
         subdivisionsPerBeat,
         compoundMeter,
+        countInEnabled,
         volume,
         soundOption,
+        soundId,
         onBpmChange,
     });
 
@@ -100,8 +106,10 @@ export function useMetronomeScheduler({
         beatsPerBar,
         subdivisionsPerBeat,
         compoundMeter,
+        countInEnabled,
         volume,
         soundOption,
+        soundId,
         onBpmChange,
     };
 
@@ -110,7 +118,40 @@ export function useMetronomeScheduler({
         setBeat(nextBeat);
     };
 
+    const loadSound = (audioContext: AudioContext, selectedSound: SoundId) => {
+        const cachedBuffer = audioBuffersRef.current[selectedSound];
+        if (cachedBuffer) {
+            return Promise.resolve(cachedBuffer);
+        }
+
+        const existingPromise = audioBufferPromisesRef.current[selectedSound];
+        if (existingPromise) {
+            return existingPromise;
+        }
+
+        const promise = fetch(
+            `${import.meta.env.BASE_URL}sounds/${selectedSound}.wav`,
+        )
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Unable to load metronome sound");
+                }
+                return response.arrayBuffer();
+            })
+            .then((data) => audioContext.decodeAudioData(data))
+            .then((buffer) => {
+                audioBuffersRef.current[selectedSound] = buffer;
+                return buffer;
+            })
+            .catch(() => null);
+
+        audioBufferPromisesRef.current[selectedSound] = promise;
+        return promise;
+    };
+
     const stop = () => {
+        startRequestRef.current += 1;
+        isLoadingSoundRef.current = false;
         if (countInTimerRef.current !== undefined) {
             window.clearTimeout(countInTimerRef.current);
             countInTimerRef.current = undefined;
@@ -128,7 +169,7 @@ export function useMetronomeScheduler({
 
         createClickSource(
             audioContext,
-            audioBufferRef.current,
+            audioBuffersRef.current[configRef.current.soundId] ?? null,
             audioContext.currentTime,
             clickVolume,
         );
@@ -149,7 +190,7 @@ export function useMetronomeScheduler({
     };
 
     const toggle = () => {
-        if (isRunning || countdown !== null) {
+        if (isRunning || countdown !== null || isLoadingSoundRef.current) {
             stop();
             return;
         }
@@ -160,32 +201,54 @@ export function useMetronomeScheduler({
             audioContextRef.current = audioContext;
         }
 
-        if (!audioBufferPromiseRef.current) {
-            audioBufferPromiseRef.current = fetch("/buttonclick.wav")
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Unable to load metronome sound");
-                    }
-                    return response.arrayBuffer();
-                })
-                .then((data) => audioContext!.decodeAudioData(data))
-                .then((buffer) => {
-                    audioBufferRef.current = buffer;
-                    return buffer;
-                })
-                .catch(() => null);
+        const requestId = ++startRequestRef.current;
+        isLoadingSoundRef.current = true;
+        void (async () => {
+            await audioContext!.resume();
+            await loadSound(audioContext!, configRef.current.soundId);
+            if (startRequestRef.current !== requestId) {
+                return;
+            }
+
+            isLoadingSoundRef.current = false;
+            beatRef.current = undefined;
+            setBeat(undefined);
+            const config = configRef.current;
+            if (config.countInEnabled) {
+                const countInStart =
+                    config.bpm < 100 ? 3 : config.bpm > 200 ? 5 : 4;
+                beginCountIn(countInStart, msPerMinute / config.bpm);
+            } else {
+                setIsRunning(true);
+            }
+        })();
+    };
+
+    const previewSound = async (selectedSound: SoundId) => {
+        let audioContext = audioContextRef.current;
+        if (!audioContext) {
+            audioContext = new AudioContext();
+            audioContextRef.current = audioContext;
         }
 
-        void audioContext.resume();
-        beatRef.current = undefined;
-        setBeat(undefined);
-        if (countInEnabled) {
-            const countInStart = bpm < 100 ? 3 : bpm > 200 ? 5 : 4;
-            beginCountIn(countInStart, msPerMinute / bpm);
-        } else {
-            setIsRunning(true);
+        await audioContext.resume();
+        const buffer = await loadSound(audioContext, selectedSound);
+        if (configRef.current.volume > 0) {
+            createClickSource(
+                audioContext,
+                buffer,
+                audioContext.currentTime,
+                configRef.current.volume,
+            );
         }
     };
+
+    useEffect(() => {
+        const audioContext = audioContextRef.current;
+        if (audioContext) {
+            void loadSound(audioContext, soundId);
+        }
+    }, [soundId]);
 
     useEffect(() => {
         if (!isRunning) {
@@ -210,7 +273,7 @@ export function useMetronomeScheduler({
         const scheduleClick = (when: number, clickVolume: number) => {
             const source = createClickSource(
                 audioContext,
-                audioBufferRef.current,
+                audioBuffersRef.current[configRef.current.soundId] ?? null,
                 when,
                 clickVolume,
             );
@@ -226,8 +289,9 @@ export function useMetronomeScheduler({
                 config.subdivisionsPerBeat !==
                     observedConfig.subdivisionsPerBeat ||
                 config.compoundMeter !== observedConfig.compoundMeter;
+            const soundChanged = config.soundId !== observedConfig.soundId;
 
-            if (timingChanged) {
+            if (timingChanged || soundChanged) {
                 for (const timer of visualTimers) {
                     window.clearTimeout(timer);
                 }
@@ -240,44 +304,52 @@ export function useMetronomeScheduler({
                     }
                 }
 
-                let currentBeat = beatRef.current;
+                if (timingChanged) {
+                    let currentBeat = beatRef.current;
 
-                if (
-                    currentBeat !== undefined &&
-                    config.subdivisionsPerBeat !==
-                        observedConfig.subdivisionsPerBeat
-                ) {
-                    const currentMainBeat = Math.floor(
-                        currentBeat / observedConfig.subdivisionsPerBeat,
+                    if (
+                        currentBeat !== undefined &&
+                        config.subdivisionsPerBeat !==
+                            observedConfig.subdivisionsPerBeat
+                    ) {
+                        const currentMainBeat = Math.floor(
+                            currentBeat / observedConfig.subdivisionsPerBeat,
+                        );
+                        currentBeat =
+                            currentMainBeat * config.subdivisionsPerBeat;
+                    }
+
+                    const tickCount =
+                        config.beatsPerBar * config.subdivisionsPerBeat;
+
+                    if (currentBeat !== undefined) {
+                        currentBeat %= tickCount;
+                        publishBeat(currentBeat);
+                    }
+
+                    nextBeat =
+                        currentBeat === undefined
+                            ? 0
+                            : (currentBeat + 1) % tickCount;
+
+                    const secondsPerTick =
+                        msPerMinute /
+                        (config.bpm * config.subdivisionsPerBeat) /
+                        1000;
+
+                    nextBeatTime =
+                        currentBeat === undefined
+                            ? audioContext.currentTime + 0.05
+                            : Math.max(
+                                  audioContext.currentTime + 0.02,
+                                  lastBeatTime + secondsPerTick,
+                              );
+                } else {
+                    nextBeatTime = Math.max(
+                        audioContext.currentTime + 0.02,
+                        nextBeatTime,
                     );
-                    currentBeat = currentMainBeat * config.subdivisionsPerBeat;
                 }
-
-                const tickCount =
-                    config.beatsPerBar * config.subdivisionsPerBeat;
-
-                if (currentBeat !== undefined) {
-                    currentBeat %= tickCount;
-                    publishBeat(currentBeat);
-                }
-
-                nextBeat =
-                    currentBeat === undefined
-                        ? 0
-                        : (currentBeat + 1) % tickCount;
-
-                const secondsPerTick =
-                    msPerMinute /
-                    (config.bpm * config.subdivisionsPerBeat) /
-                    1000;
-
-                nextBeatTime =
-                    currentBeat === undefined
-                        ? audioContext.currentTime + 0.05
-                        : Math.max(
-                              audioContext.currentTime + 0.02,
-                              lastBeatTime + secondsPerTick,
-                          );
 
                 observedConfig = config;
             }
@@ -310,6 +382,9 @@ export function useMetronomeScheduler({
                         config.volume *
                         (config.compoundMeter && isFullBeat ? 1.1 : 1);
                     scheduleClick(nextBeatTime, clickVolume);
+                    if (!audioBuffersRef.current[config.soundId]) {
+                        void loadSound(audioContext, config.soundId);
+                    }
                 }
 
                 const scheduledTime = nextBeatTime;
@@ -352,7 +427,7 @@ export function useMetronomeScheduler({
 
         const startScheduler = async () => {
             await audioContext.resume();
-            await audioBufferPromiseRef.current;
+            await loadSound(audioContext, configRef.current.soundId);
 
             if (cancelled) {
                 return;
@@ -406,5 +481,6 @@ export function useMetronomeScheduler({
         isCountingIn: countdown !== null,
         toggle,
         stop,
+        previewSound,
     };
 }

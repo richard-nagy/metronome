@@ -10,6 +10,14 @@ export enum SoundOption {
     First = "first",
 }
 
+export enum SoundId {
+    Click = "buttonclick",
+    Bell = "bell",
+    Metronome = "metronome",
+    Square = "square",
+    Wood = "wood",
+}
+
 export enum SubdivisionMode {
     Off = "off",
     Eighths = "eighths",

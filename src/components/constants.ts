@@ -1,4 +1,4 @@
-import { SubdivisionMode, TimeSignature } from "@/types/types";
+import { SoundId, SubdivisionMode, TimeSignature } from "@/types/types";
 
 export const defaultBeatCounter = 4;
 export const minBeatCounter = 2;
@@ -17,6 +17,14 @@ export const msPerMinute = 60000;
 export const msPerSecond = 1000;
 
 export const timeSignatureOptions = Object.values(TimeSignature);
+
+export const soundOptions: { id: SoundId; label: string }[] = [
+    { id: SoundId.Click, label: "Classic click" },
+    { id: SoundId.Bell, label: "Bell" },
+    { id: SoundId.Metronome, label: "Metronome" },
+    { id: SoundId.Square, label: "Square" },
+    { id: SoundId.Wood, label: "Woodblock" },
+];
 
 export function getSubdivisionsPerBeat(mode: SubdivisionMode): number {
     switch (mode) {

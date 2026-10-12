@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SoundOption } from "@/types/types";
+import { SoundId, SoundOption } from "@/types/types";
 import { maxBpm, minBpm } from "../constants";
 import { useMetronomeScheduler } from "./useMetronomeScheduler";
 
@@ -12,12 +12,14 @@ interface MockSource {
     stop: ReturnType<typeof vi.fn>;
     connect: ReturnType<typeof vi.fn>;
     onended: (() => void) | null;
+    buffer?: AudioBuffer | null;
 }
 
 let currentResult: ReturnType<typeof useMetronomeScheduler>;
 let root: Root | undefined;
 let sources: MockSource[];
 let gainLevels: number[];
+let decodedBuffers: AudioBuffer[];
 
 function HookHarness({ config }: { config: SchedulerProps }) {
     currentResult = useMetronomeScheduler(config);
@@ -36,6 +38,7 @@ function makeConfig(overrides: Partial<SchedulerProps> = {}): SchedulerProps {
         countInEnabled: false,
         volume: 1,
         soundOption: SoundOption.All,
+        soundId: SoundId.Click,
         onBpmChange: vi.fn(),
         ...overrides,
     };
@@ -55,9 +58,9 @@ function updateScheduler(config: SchedulerProps) {
 }
 
 async function flushPromises() {
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
+    for (let index = 0; index < 10; index += 1) {
+        await Promise.resolve();
+    }
 }
 
 async function startScheduler() {
@@ -84,6 +87,7 @@ beforeEach(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     sources = [];
     gainLevels = [];
+    decodedBuffers = [];
 
     const audioContext = {
         get currentTime() {
@@ -93,9 +97,11 @@ beforeEach(() => {
         state: "running",
         resume: vi.fn(async () => undefined),
         close: vi.fn(async () => undefined),
-        decodeAudioData: vi.fn(
-            async () => ({}),
-        ) as unknown as AudioContext["decodeAudioData"],
+        decodeAudioData: vi.fn(async () => {
+            const buffer = {} as AudioBuffer;
+            decodedBuffers.push(buffer);
+            return buffer;
+        }) as unknown as AudioContext["decodeAudioData"],
         createGain: vi.fn(() => ({
             gain: {
                 setValueAtTime: vi.fn((value: number) =>
@@ -105,10 +111,7 @@ beforeEach(() => {
             },
             connect: vi.fn(),
         })),
-        createBufferSource: vi.fn(() => ({
-            ...makeSource(),
-            buffer: null,
-        })),
+        createBufferSource: vi.fn(() => makeSource()),
         createOscillator: vi.fn(() => ({
             ...makeSource(),
             frequency: { setValueAtTime: vi.fn() },
@@ -175,6 +178,52 @@ describe("useMetronomeScheduler", () => {
 
         expect(currentResult.countdown).toBeNull();
         expect(currentResult.isRunning).toBe(true);
+    });
+
+    it("loads the selected sound before playback", async () => {
+        mountScheduler(makeConfig({ soundId: SoundId.Wood }));
+
+        await startScheduler();
+
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.BASE_URL}sounds/wood.wav`,
+        );
+        expect(currentResult.isRunning).toBe(true);
+        expect(sources[0]?.buffer).toBe(decodedBuffers[0]);
+    });
+
+    it("switches queued clicks when the sound changes during playback", async () => {
+        const config = makeConfig();
+        mountScheduler(config);
+
+        await startScheduler();
+        expect(sources[0]?.buffer).toBe(decodedBuffers[0]);
+
+        await act(async () => {
+            updateScheduler({ ...config, soundId: SoundId.Wood });
+            await flushPromises();
+            await vi.advanceTimersByTimeAsync(50);
+        });
+
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.BASE_URL}sounds/wood.wav`,
+        );
+        expect(
+            sources.some((source) => source.buffer === decodedBuffers[1]),
+        ).toBe(true);
+    });
+
+    it("previews the selected sound", async () => {
+        mountScheduler(makeConfig());
+
+        await act(async () => {
+            await currentResult.previewSound(SoundId.Bell);
+        });
+
+        expect(fetch).toHaveBeenCalledWith(
+            `${import.meta.env.BASE_URL}sounds/bell.wav`,
+        );
+        expect(sources).toHaveLength(1);
     });
 
     it("plays subdivision clicks on full beats only", async () => {

@@ -1,5 +1,5 @@
 import { getColorFromRange } from "@/lib/utils";
-import { SubdivisionMode, TimeSignature } from "@/types/types";
+import { SoundId, SubdivisionMode, TimeSignature } from "@/types/types";
 import { getTimeSignatureConfig, maxBpm, minBpm } from "../constants";
 import { useResolvedTheme } from "../ui/useResolvedTheme";
 import { DisplaySettings } from "./DisplaySettings";
@@ -24,10 +24,11 @@ const BpmContainer = () => {
         timeSignature,
         volume,
         soundOption,
+        soundId,
     } = settings;
     const meter = getTimeSignatureConfig(timeSignature, subdivisionMode);
     const resolvedTheme = useResolvedTheme();
-    const { beat, isRunning, countdown, isCountingIn, toggle } =
+    const { beat, isRunning, countdown, isCountingIn, toggle, previewSound } =
         useMetronomeScheduler({
             bpm,
             bpmRampEnabled,
@@ -39,6 +40,7 @@ const BpmContainer = () => {
             countInEnabled,
             volume,
             soundOption,
+            soundId,
             onBpmChange: (nextBpm) => updateSettings({ bpm: nextBpm }),
         });
 
@@ -88,12 +90,17 @@ const BpmContainer = () => {
                 <SoundSettings
                     volume={volume}
                     soundOption={soundOption}
+                    soundId={soundId}
                     onVolumeChange={(nextVolume) =>
                         updateSettings({ volume: nextVolume })
                     }
                     onSoundOptionChange={(nextSoundOption) =>
                         updateSettings({ soundOption: nextSoundOption })
                     }
+                    onSoundIdChange={(nextSoundId: SoundId) =>
+                        updateSettings({ soundId: nextSoundId })
+                    }
+                    onPreviewSound={previewSound}
                 />
                 <div
                     aria-hidden="true"

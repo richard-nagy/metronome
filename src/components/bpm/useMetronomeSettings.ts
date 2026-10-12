@@ -1,4 +1,9 @@
-import { SoundOption, SubdivisionMode, TimeSignature } from "@/types/types";
+import {
+    SoundId,
+    SoundOption,
+    SubdivisionMode,
+    TimeSignature,
+} from "@/types/types";
 import { useEffect, useState } from "react";
 import {
     defaultBpm,
@@ -25,6 +30,7 @@ interface MetronomeSettings {
     countInEnabled: boolean;
     volume: number;
     soundOption: SoundOption;
+    soundId: SoundId;
 }
 
 const settingsStorageKey = "metronome-settings";
@@ -40,6 +46,7 @@ const defaultSettings: MetronomeSettings = {
     countInEnabled: true,
     volume: 1,
     soundOption: SoundOption.Full,
+    soundId: SoundId.Click,
 };
 
 function loadSettings(): MetronomeSettings {
@@ -122,6 +129,9 @@ function loadSettings(): MetronomeSettings {
             )
                 ? (stored.soundOption as SoundOption)
                 : defaultSettings.soundOption,
+            soundId: Object.values(SoundId).includes(stored.soundId as SoundId)
+                ? (stored.soundId as SoundId)
+                : defaultSettings.soundId,
         };
     } catch {
         return defaultSettings;

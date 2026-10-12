@@ -1,7 +1,12 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SoundOption, SubdivisionMode, TimeSignature } from "@/types/types";
+import {
+    SoundId,
+    SoundOption,
+    SubdivisionMode,
+    TimeSignature,
+} from "@/types/types";
 import {
     defaultBpm,
     defaultBpmRampAmount,
@@ -53,6 +58,7 @@ describe("useMetronomeSettings", () => {
                 subdivisionMode: SubdivisionMode.Triplets,
                 timeSignature: TimeSignature.SixEight,
                 soundOption: SoundOption.First,
+                soundId: SoundId.Wood,
             });
         });
         unmountSettings();
@@ -64,6 +70,7 @@ describe("useMetronomeSettings", () => {
             subdivisionMode: SubdivisionMode.Triplets,
             timeSignature: TimeSignature.SixEight,
             soundOption: SoundOption.First,
+            soundId: SoundId.Wood,
         });
     });
 
@@ -109,6 +116,7 @@ describe("useMetronomeSettings", () => {
             timeSignature: TimeSignature.FourFour,
             volume: 1,
             soundOption: SoundOption.Full,
+            soundId: SoundId.Click,
         });
         expect(
             JSON.parse(localStorage.getItem(settingsStorageKey) ?? "{}"),
@@ -126,6 +134,7 @@ describe("useMetronomeSettings", () => {
                 beatCounter: 1,
                 volume: 2,
                 soundOption: "invalid",
+                soundId: "invalid",
             }),
         );
 
@@ -139,6 +148,7 @@ describe("useMetronomeSettings", () => {
             timeSignature: TimeSignature.FourFour,
             volume: 1,
             soundOption: SoundOption.Full,
+            soundId: SoundId.Click,
         });
     });
 });
