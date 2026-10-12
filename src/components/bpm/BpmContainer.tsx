@@ -99,7 +99,7 @@ const BpmContainer = () => {
         }
 
         updateTimingSettings({
-            bpm: Math.min(maxBpm, Math.max(minBpm, value)),
+            bpm: Math.min(maxBpm, Math.max(minBpm, Math.round(value))),
         });
     };
     //#endregion
@@ -122,8 +122,9 @@ const BpmContainer = () => {
                     <InputGroupInput
                         aria-label="Tempo in beats per minute"
                         type="number"
-                        max={300}
-                        min={40}
+                        max={maxBpm}
+                        min={minBpm}
+                        step={1}
                         className="text-4xl md:text-4xl font-bold text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         value={bpm}
                         style={{ color }}
@@ -398,7 +399,16 @@ const BpmContainer = () => {
                                 >
                                     <Minus className="size-4" />
                                 </Button>
-                                <output className="min-w-16 text-center font-medium tabular-nums">
+                                <output
+                                    aria-disabled={
+                                        !bpmRampEnabled || isPlaybackActive
+                                    }
+                                    className={`min-w-16 text-center font-medium tabular-nums ${
+                                        !bpmRampEnabled || isPlaybackActive
+                                            ? "text-muted-foreground"
+                                            : ""
+                                    }`}
+                                >
                                     {bpmRampBars}{" "}
                                     {bpmRampBars === 1 ? "bar" : "bars"}
                                 </output>
@@ -424,15 +434,43 @@ const BpmContainer = () => {
                                 </Button>
                             </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                            <Label id="bpm-ramp-amount-label">BPM change</Label>
-                            <output
-                                aria-labelledby="bpm-ramp-amount-label"
-                                className="font-medium tabular-nums"
-                            >
-                                {bpmRampAmount > 0 ? "+" : ""}
-                                {bpmRampAmount} BPM
-                            </output>
+                        <div className="flex items-center justify-between gap-4">
+                            <Label htmlFor="bpm-ramp-amount">BPM change</Label>
+                            <InputGroup className="w-24">
+                                <InputGroupInput
+                                    id="bpm-ramp-amount"
+                                    type="number"
+                                    min={minBpmRampAmount}
+                                    max={maxBpmRampAmount}
+                                    step={1}
+                                    className="text-right tabular-nums font-bold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                    value={bpmRampAmount}
+                                    disabled={
+                                        !bpmRampEnabled || isPlaybackActive
+                                    }
+                                    onChange={(event) => {
+                                        const value =
+                                            event.target.valueAsNumber;
+                                        if (Number.isNaN(value)) {
+                                            return;
+                                        }
+                                        updateSettings({
+                                            bpmRampAmount: Math.min(
+                                                maxBpmRampAmount,
+                                                Math.max(
+                                                    minBpmRampAmount,
+                                                    Math.round(value),
+                                                ),
+                                            ),
+                                        });
+                                    }}
+                                />
+                                <InputGroupAddon align="inline-end">
+                                    <span className="font-medium text-lg">
+                                        BPM
+                                    </span>
+                                </InputGroupAddon>
+                            </InputGroup>
                         </div>
                         <Slider
                             aria-label="BPM change per interval"
@@ -443,8 +481,11 @@ const BpmContainer = () => {
                             disabled={!bpmRampEnabled || isPlaybackActive}
                             onValueChange={(value) =>
                                 updateSettings({
-                                    bpmRampAmount: value[0] ?? 10,
+                                    bpmRampAmount: value[0] ?? 0,
                                 })
+                            }
+                            onDoubleClick={() =>
+                                updateSettings({ bpmRampAmount: 0 })
                             }
                         />
                     </div>
