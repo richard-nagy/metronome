@@ -17,6 +17,7 @@ interface SoundSettingsProps {
     volume: number;
     soundOption: SoundOption;
     soundId: SoundId;
+    isPlaybackActive: boolean;
     onVolumeChange: (volume: number) => void;
     onSoundOptionChange: (option: SoundOption) => void;
     onSoundIdChange: (soundId: SoundId) => void;
@@ -27,6 +28,7 @@ export function SoundSettings({
     volume,
     soundOption,
     soundId,
+    isPlaybackActive,
     onVolumeChange,
     onSoundOptionChange,
     onSoundIdChange,
@@ -41,8 +43,9 @@ export function SoundSettings({
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
-                                className="h-9 w-40 justify-between px-3 font-normal"
+                                className="h-9 w-34 justify-between px-3 font-normal"
                                 variant="outline"
+                                disabled={isPlaybackActive}
                                 aria-label={`Metronome sound: ${soundOptions.find((option) => option.id === soundId)?.label ?? "Classic click"}`}
                             >
                                 <span>
@@ -53,7 +56,7 @@ export function SoundSettings({
                                 <ChevronDown className="size-4 opacity-60" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-40">
+                        <DropdownMenuContent align="start" className="w-36">
                             <DropdownMenuRadioGroup
                                 value={soundId}
                                 aria-label="Metronome sound"
@@ -65,6 +68,7 @@ export function SoundSettings({
                                     <DropdownMenuRadioItem
                                         key={option.id}
                                         value={option.id}
+                                        disabled={isPlaybackActive}
                                     >
                                         {option.label}
                                     </DropdownMenuRadioItem>
@@ -100,7 +104,7 @@ export function SoundSettings({
                 <Slider
                     aria-label="Output volume"
                     id="volume"
-                    className="min-w-0 w-40"
+                    className="min-w-0 w-30"
                     min={0}
                     max={1}
                     step={0.1}

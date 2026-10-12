@@ -202,7 +202,7 @@ describe("useMetronomeScheduler", () => {
         await act(async () => {
             updateScheduler({ ...config, soundId: SoundId.Wood });
             await flushPromises();
-            await vi.advanceTimersByTimeAsync(50);
+            await vi.advanceTimersByTimeAsync(600);
         });
 
         expect(fetch).toHaveBeenCalledWith(

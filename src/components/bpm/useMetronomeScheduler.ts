@@ -289,9 +289,8 @@ export function useMetronomeScheduler({
                 config.subdivisionsPerBeat !==
                     observedConfig.subdivisionsPerBeat ||
                 config.compoundMeter !== observedConfig.compoundMeter;
-            const soundChanged = config.soundId !== observedConfig.soundId;
 
-            if (timingChanged || soundChanged) {
+            if (timingChanged) {
                 for (const timer of visualTimers) {
                     window.clearTimeout(timer);
                 }
@@ -304,52 +303,44 @@ export function useMetronomeScheduler({
                     }
                 }
 
-                if (timingChanged) {
-                    let currentBeat = beatRef.current;
+                let currentBeat = beatRef.current;
 
-                    if (
-                        currentBeat !== undefined &&
-                        config.subdivisionsPerBeat !==
-                            observedConfig.subdivisionsPerBeat
-                    ) {
-                        const currentMainBeat = Math.floor(
-                            currentBeat / observedConfig.subdivisionsPerBeat,
-                        );
-                        currentBeat =
-                            currentMainBeat * config.subdivisionsPerBeat;
-                    }
-
-                    const tickCount =
-                        config.beatsPerBar * config.subdivisionsPerBeat;
-
-                    if (currentBeat !== undefined) {
-                        currentBeat %= tickCount;
-                        publishBeat(currentBeat);
-                    }
-
-                    nextBeat =
-                        currentBeat === undefined
-                            ? 0
-                            : (currentBeat + 1) % tickCount;
-
-                    const secondsPerTick =
-                        msPerMinute /
-                        (config.bpm * config.subdivisionsPerBeat) /
-                        1000;
-
-                    nextBeatTime =
-                        currentBeat === undefined
-                            ? audioContext.currentTime + 0.05
-                            : Math.max(
-                                  audioContext.currentTime + 0.02,
-                                  lastBeatTime + secondsPerTick,
-                              );
-                } else {
-                    nextBeatTime = Math.max(
-                        audioContext.currentTime + 0.02,
-                        nextBeatTime,
+                if (
+                    currentBeat !== undefined &&
+                    config.subdivisionsPerBeat !==
+                        observedConfig.subdivisionsPerBeat
+                ) {
+                    const currentMainBeat = Math.floor(
+                        currentBeat / observedConfig.subdivisionsPerBeat,
                     );
+                    currentBeat = currentMainBeat * config.subdivisionsPerBeat;
                 }
+
+                const tickCount =
+                    config.beatsPerBar * config.subdivisionsPerBeat;
+
+                if (currentBeat !== undefined) {
+                    currentBeat %= tickCount;
+                    publishBeat(currentBeat);
+                }
+
+                nextBeat =
+                    currentBeat === undefined
+                        ? 0
+                        : (currentBeat + 1) % tickCount;
+
+                const secondsPerTick =
+                    msPerMinute /
+                    (config.bpm * config.subdivisionsPerBeat) /
+                    1000;
+
+                nextBeatTime =
+                    currentBeat === undefined
+                        ? audioContext.currentTime + 0.05
+                        : Math.max(
+                              audioContext.currentTime + 0.02,
+                              lastBeatTime + secondsPerTick,
+                          );
 
                 observedConfig = config;
             }

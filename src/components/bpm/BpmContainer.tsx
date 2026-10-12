@@ -91,6 +91,7 @@ const BpmContainer = () => {
                     volume={volume}
                     soundOption={soundOption}
                     soundId={soundId}
+                    isPlaybackActive={isPlaybackActive}
                     onVolumeChange={(nextVolume) =>
                         updateSettings({ volume: nextVolume })
                     }
