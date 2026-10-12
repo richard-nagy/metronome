@@ -1,5 +1,6 @@
 import { getColorFromRange } from "@/lib/utils";
-import { maxBpm, minBpm } from "../constants";
+import { SubdivisionMode } from "@/types/types";
+import { getSubdivisionsPerBeat, maxBpm, minBpm } from "../constants";
 import { useResolvedTheme } from "../ui/useResolvedTheme";
 import { RhythmSettings } from "./RhythmSettings";
 import { SoundSettings } from "./SoundSettings";
@@ -16,7 +17,7 @@ const BpmContainer = () => {
         bpmRampEnabled,
         bpmRampBars,
         bpmRampAmount,
-        showSubdivisions,
+        subdivisionMode,
         showNumbers,
         countInEnabled,
         beatCounter,
@@ -31,7 +32,7 @@ const BpmContainer = () => {
             bpmRampBars,
             bpmRampAmount,
             beatsPerBar: beatCounter,
-            showSubdivisions,
+            subdivisionsPerBeat: getSubdivisionsPerBeat(subdivisionMode),
             countInEnabled,
             volume,
             soundOption,
@@ -40,7 +41,7 @@ const BpmContainer = () => {
 
     const updateTimingSettings = (updates: {
         bpm?: number;
-        showSubdivisions?: boolean;
+        subdivisionMode?: SubdivisionMode;
         showNumbers?: boolean;
         countInEnabled?: boolean;
         beatCounter?: number;
@@ -53,7 +54,8 @@ const BpmContainer = () => {
     //#endregion
 
     //#region Derived values
-    const tickRate = bpm * (showSubdivisions ? 2 : 1);
+    const subdivisionsPerBeat = getSubdivisionsPerBeat(subdivisionMode);
+    const tickRate = bpm * subdivisionsPerBeat;
     const color = getColorFromRange(bpm, minBpm, maxBpm, resolvedTheme);
     //#endregion
 
@@ -70,7 +72,7 @@ const BpmContainer = () => {
                 isRunning={isRunning}
                 isCountingIn={isCountingIn}
                 isPlaybackActive={isPlaybackActive}
-                showSubdivisions={showSubdivisions}
+                subdivisionsPerBeat={subdivisionsPerBeat}
                 showNumbers={showNumbers}
                 countdown={countdown}
                 tickRate={tickRate}
@@ -97,15 +99,15 @@ const BpmContainer = () => {
                 />
                 <RhythmSettings
                     beatCounter={beatCounter}
-                    showSubdivisions={showSubdivisions}
+                    subdivisionMode={subdivisionMode}
                     showNumbers={showNumbers}
                     countInEnabled={countInEnabled}
                     isPlaybackActive={isPlaybackActive}
                     onBeatCounterChange={(nextBeatCounter) =>
                         updateTimingSettings({ beatCounter: nextBeatCounter })
                     }
-                    onSubdivisionsChange={(checked) =>
-                        updateTimingSettings({ showSubdivisions: checked })
+                    onSubdivisionModeChange={(mode) =>
+                        updateTimingSettings({ subdivisionMode: mode })
                     }
                     onNumbersChange={(checked) =>
                         updateTimingSettings({ showNumbers: checked })

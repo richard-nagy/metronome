@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SoundOption } from "@/types/types";
+import { SoundOption, SubdivisionMode } from "@/types/types";
 import {
     defaultBeatCounter,
     defaultBpm,
@@ -51,7 +51,7 @@ describe("useMetronomeSettings", () => {
         act(() => {
             settingsResult.updateSettings({
                 bpm: 148,
-                showSubdivisions: true,
+                subdivisionMode: SubdivisionMode.Triplets,
                 soundOption: SoundOption.First,
             });
         });
@@ -61,9 +61,22 @@ describe("useMetronomeSettings", () => {
 
         expect(settingsResult.settings).toMatchObject({
             bpm: 148,
-            showSubdivisions: true,
+            subdivisionMode: SubdivisionMode.Triplets,
             soundOption: SoundOption.First,
         });
+    });
+
+    it("migrates enabled legacy subdivisions to eighth notes", () => {
+        localStorage.setItem(
+            settingsStorageKey,
+            JSON.stringify({ showSubdivisions: true }),
+        );
+
+        mountSettings();
+
+        expect(settingsResult.settings.subdivisionMode).toBe(
+            SubdivisionMode.Eighths,
+        );
     });
 
     it("uses defaults and replaces malformed stored JSON", () => {
@@ -76,7 +89,7 @@ describe("useMetronomeSettings", () => {
             bpmRampEnabled: false,
             bpmRampBars: defaultBpmRampBars,
             bpmRampAmount: defaultBpmRampAmount,
-            showSubdivisions: false,
+            subdivisionMode: SubdivisionMode.Off,
             showNumbers: false,
             countInEnabled: true,
             beatCounter: defaultBeatCounter,

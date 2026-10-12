@@ -8,7 +8,7 @@ interface UseMetronomeSchedulerProps {
     bpmRampBars: number;
     bpmRampAmount: number;
     beatsPerBar: number;
-    showSubdivisions: boolean;
+    subdivisionsPerBeat: number;
     countInEnabled: boolean;
     volume: number;
     soundOption: SoundOption;
@@ -60,7 +60,7 @@ export function useMetronomeScheduler({
     bpmRampBars,
     bpmRampAmount,
     beatsPerBar,
-    showSubdivisions,
+    subdivisionsPerBeat,
     countInEnabled,
     volume,
     soundOption,
@@ -83,7 +83,7 @@ export function useMetronomeScheduler({
         bpmRampBars,
         bpmRampAmount,
         beatsPerBar,
-        showSubdivisions,
+        subdivisionsPerBeat,
         volume,
         soundOption,
         onBpmChange,
@@ -95,7 +95,7 @@ export function useMetronomeScheduler({
         bpmRampBars,
         bpmRampAmount,
         beatsPerBar,
-        showSubdivisions,
+        subdivisionsPerBeat,
         volume,
         soundOption,
         onBpmChange,
@@ -219,7 +219,8 @@ export function useMetronomeScheduler({
             const timingChanged =
                 config.bpm !== observedConfig.bpm ||
                 config.beatsPerBar !== observedConfig.beatsPerBar ||
-                config.showSubdivisions !== observedConfig.showSubdivisions;
+                config.subdivisionsPerBeat !==
+                    observedConfig.subdivisionsPerBeat;
 
             if (timingChanged) {
                 for (const timer of visualTimers) {
@@ -238,15 +239,17 @@ export function useMetronomeScheduler({
 
                 if (
                     currentBeat !== undefined &&
-                    config.showSubdivisions !== observedConfig.showSubdivisions
+                    config.subdivisionsPerBeat !==
+                        observedConfig.subdivisionsPerBeat
                 ) {
-                    currentBeat = config.showSubdivisions
-                        ? currentBeat * 2
-                        : Math.floor(currentBeat / 2);
+                    const currentMainBeat = Math.floor(
+                        currentBeat / observedConfig.subdivisionsPerBeat,
+                    );
+                    currentBeat = currentMainBeat * config.subdivisionsPerBeat;
                 }
 
                 const tickCount =
-                    config.beatsPerBar * (config.showSubdivisions ? 2 : 1);
+                    config.beatsPerBar * config.subdivisionsPerBeat;
 
                 if (currentBeat !== undefined) {
                     currentBeat %= tickCount;
@@ -260,7 +263,7 @@ export function useMetronomeScheduler({
 
                 const secondsPerTick =
                     msPerMinute /
-                    (config.bpm * (config.showSubdivisions ? 2 : 1)) /
+                    (config.bpm * config.subdivisionsPerBeat) /
                     1000;
 
                 nextBeatTime =
@@ -274,13 +277,10 @@ export function useMetronomeScheduler({
                 observedConfig = config;
             }
 
-            const tickCount =
-                config.beatsPerBar * (config.showSubdivisions ? 2 : 1);
+            const tickCount = config.beatsPerBar * config.subdivisionsPerBeat;
 
             const secondsPerTick =
-                msPerMinute /
-                (config.bpm * (config.showSubdivisions ? 2 : 1)) /
-                1000;
+                msPerMinute / (config.bpm * config.subdivisionsPerBeat) / 1000;
 
             while (nextBeatTime < audioContext.currentTime + lookAheadSeconds) {
                 const currentTime = audioContext.currentTime;
@@ -293,7 +293,7 @@ export function useMetronomeScheduler({
 
                 const scheduledBeat = nextBeat;
                 const isFullBeat =
-                    !config.showSubdivisions || scheduledBeat % 2 === 0;
+                    scheduledBeat % config.subdivisionsPerBeat === 0;
                 const shouldPlay =
                     config.soundOption === SoundOption.All ||
                     (config.soundOption === SoundOption.Full && isFullBeat) ||

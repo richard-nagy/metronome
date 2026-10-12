@@ -30,7 +30,7 @@ function makeConfig(overrides: Partial<SchedulerProps> = {}): SchedulerProps {
         bpmRampBars: 1,
         bpmRampAmount: 5,
         beatsPerBar: 4,
-        showSubdivisions: false,
+        subdivisionsPerBeat: 1,
         countInEnabled: false,
         volume: 1,
         soundOption: SoundOption.All,
@@ -175,7 +175,7 @@ describe("useMetronomeScheduler", () => {
     it("plays subdivision clicks on full beats only", async () => {
         mountScheduler(
             makeConfig({
-                showSubdivisions: true,
+                subdivisionsPerBeat: 2,
                 soundOption: SoundOption.Full,
             }),
         );
@@ -187,6 +187,43 @@ describe("useMetronomeScheduler", () => {
 
         expect(currentResult.isRunning).toBe(true);
         expect(sources).toHaveLength(2);
+    });
+
+    it.each([
+        { subdivisionsPerBeat: 2, nextTickTime: 0.3 },
+        { subdivisionsPerBeat: 3, nextTickTime: 0.05 + 0.5 / 3 },
+        { subdivisionsPerBeat: 4, nextTickTime: 0.175 },
+    ])(
+        "spaces $subdivisionsPerBeat ticks per beat evenly",
+        async ({ subdivisionsPerBeat, nextTickTime }) => {
+            mountScheduler(makeConfig({ subdivisionsPerBeat }));
+
+            await startScheduler();
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(250);
+            });
+
+            expect(sources[1]?.start.mock.calls[0]?.[0]).toBeCloseTo(
+                nextTickTime,
+            );
+        },
+    );
+
+    it("plays only main beats in triplet mode when full beats are selected", async () => {
+        mountScheduler(
+            makeConfig({
+                beatsPerBar: 2,
+                subdivisionsPerBeat: 3,
+                soundOption: SoundOption.Full,
+            }),
+        );
+
+        await startScheduler();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(1100);
+        });
+
+        expect(sources).toHaveLength(3);
     });
 
     it("falls back to oscillator clicks when the sound asset fails to load", async () => {
@@ -255,7 +292,7 @@ describe("useMetronomeScheduler", () => {
         const queuedClick = sources[1];
         expect(queuedClick).toBeDefined();
 
-        updateScheduler({ ...config, showSubdivisions: true });
+        updateScheduler({ ...config, subdivisionsPerBeat: 2 });
         await act(async () => {
             await vi.advanceTimersByTimeAsync(100);
         });

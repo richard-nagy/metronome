@@ -5,7 +5,7 @@ interface BpmVisualCueProps {
     bpm: number;
     beat: number | undefined;
     isRunning: boolean;
-    showSubdivisions: boolean;
+    subdivisionsPerBeat: number;
     showNumbers: boolean;
     countdown: number | null;
     color: string;
@@ -15,7 +15,7 @@ const BpmVisualCue = ({
     bpm,
     beat,
     isRunning,
-    showSubdivisions,
+    subdivisionsPerBeat,
     showNumbers,
     countdown,
     color,
@@ -37,7 +37,7 @@ const BpmVisualCue = ({
                             return (
                                 <div
                                     key={i}
-                                    className="relative flex size-16 items-center justify-center"
+                                    className="relative flex size-18 shrink-0 items-center justify-center"
                                 >
                                     <BpmCircle
                                         text={
@@ -50,29 +50,54 @@ const BpmVisualCue = ({
                                         first={i === 0}
                                         active={
                                             isRunning &&
-                                            (showSubdivisions
-                                                ? beat === i * 2 ||
-                                                  beat === i * 2 + 1
-                                                : beat === i)
+                                            beat !== undefined &&
+                                            Math.floor(
+                                                beat / subdivisionsPerBeat,
+                                            ) === i
                                         }
                                         subdivision={false}
+                                        mainCircleSizeClass="size-13 border-2"
                                         visible
                                     />
-                                    <div className="absolute left-15.5 top-1/2 -translate-y-1/2">
-                                        <BpmCircle
-                                            text=""
-                                            bpm={bpm}
-                                            color={color}
-                                            first={false}
-                                            active={
-                                                isRunning &&
-                                                showSubdivisions &&
-                                                beat === i * 2 + 1
-                                            }
-                                            subdivision
-                                            visible={showSubdivisions}
-                                        />
-                                    </div>
+                                    {subdivisionsPerBeat > 1 && (
+                                        <div
+                                            className="absolute top-1/2 flex -translate-y-1/2 flex-col gap-1"
+                                            style={{ left: "calc(100% - 2px)" }}
+                                        >
+                                            {Array.from(
+                                                {
+                                                    length:
+                                                        subdivisionsPerBeat - 1,
+                                                },
+                                                (_, subdivisionIndex) => {
+                                                    const tickWithinBeat =
+                                                        subdivisionIndex + 1;
+                                                    const tickIndex =
+                                                        i *
+                                                            subdivisionsPerBeat +
+                                                        tickWithinBeat;
+
+                                                    return (
+                                                        <BpmCircle
+                                                            key={tickWithinBeat}
+                                                            text=""
+                                                            bpm={bpm}
+                                                            color={color}
+                                                            first={false}
+                                                            active={
+                                                                isRunning &&
+                                                                beat ===
+                                                                    tickIndex
+                                                            }
+                                                            subdivision
+                                                            subdivisionSizeClass="size-3"
+                                                            visible
+                                                        />
+                                                    );
+                                                },
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}

@@ -1,4 +1,4 @@
-import { SoundOption } from "@/types/types";
+import { SoundOption, SubdivisionMode } from "@/types/types";
 import { useEffect, useState } from "react";
 import {
     defaultBeatCounter,
@@ -20,7 +20,7 @@ interface MetronomeSettings {
     bpmRampEnabled: boolean;
     bpmRampBars: number;
     bpmRampAmount: number;
-    showSubdivisions: boolean;
+    subdivisionMode: SubdivisionMode;
     showNumbers: boolean;
     countInEnabled: boolean;
     beatCounter: number;
@@ -35,7 +35,7 @@ const defaultSettings: MetronomeSettings = {
     bpmRampEnabled: false,
     bpmRampBars: defaultBpmRampBars,
     bpmRampAmount: defaultBpmRampAmount,
-    showSubdivisions: false,
+    subdivisionMode: SubdivisionMode.Off,
     showNumbers: false,
     countInEnabled: true,
     beatCounter: defaultBeatCounter,
@@ -54,7 +54,9 @@ function loadSettings(): MetronomeSettings {
             return defaultSettings;
         }
 
-        const stored = JSON.parse(storedValue) as Partial<MetronomeSettings>;
+        const stored = JSON.parse(storedValue) as Partial<MetronomeSettings> & {
+            showSubdivisions?: boolean;
+        };
         return {
             bpm:
                 typeof stored.bpm === "number" && Number.isFinite(stored.bpm)
@@ -83,10 +85,13 @@ function loadSettings(): MetronomeSettings {
                           ),
                       )
                     : defaultSettings.bpmRampAmount,
-            showSubdivisions:
-                typeof stored.showSubdivisions === "boolean"
-                    ? stored.showSubdivisions
-                    : defaultSettings.showSubdivisions,
+            subdivisionMode: Object.values(SubdivisionMode).includes(
+                stored.subdivisionMode as SubdivisionMode,
+            )
+                ? (stored.subdivisionMode as SubdivisionMode)
+                : stored.showSubdivisions === true
+                  ? SubdivisionMode.Eighths
+                  : SubdivisionMode.Off,
             showNumbers:
                 typeof stored.showNumbers === "boolean"
                     ? stored.showNumbers

@@ -9,6 +9,8 @@ interface BpmCircleProps {
     active: boolean;
     bpm: number;
     subdivision: boolean;
+    mainCircleSizeClass?: string;
+    subdivisionSizeClass?: string;
     visible: boolean;
 }
 
@@ -19,6 +21,8 @@ export default function BpmCircle({
     active,
     bpm,
     subdivision,
+    mainCircleSizeClass = "size-12 border-2",
+    subdivisionSizeClass = "size-3",
     visible,
 }: BpmCircleProps) {
     const [pulse, setPulse] = useState(false);
@@ -42,8 +46,8 @@ export default function BpmCircle({
     return (
         <div
             className={cn(
-                subdivision ? "size-3" : "size-12 border-2",
-                "flex items-center justify-center rounded-full",
+                subdivision ? subdivisionSizeClass : mainCircleSizeClass,
+                "aspect-square shrink-0 flex items-center justify-center rounded-full",
                 !subdivision && "text-sm font-semibold",
                 !first &&
                     !subdivision &&

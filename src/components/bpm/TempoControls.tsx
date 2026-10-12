@@ -24,7 +24,7 @@ interface TempoControlsProps {
     isRunning: boolean;
     isCountingIn: boolean;
     isPlaybackActive: boolean;
-    showSubdivisions: boolean;
+    subdivisionsPerBeat: number;
     showNumbers: boolean;
     countdown: number | null;
     tickRate: number;
@@ -40,7 +40,7 @@ export function TempoControls({
     isRunning,
     isCountingIn,
     isPlaybackActive,
-    showSubdivisions,
+    subdivisionsPerBeat,
     showNumbers,
     countdown,
     tickRate,
@@ -141,7 +141,7 @@ export function TempoControls({
                 bpm={tickRate}
                 beat={beat}
                 isRunning={isRunning}
-                showSubdivisions={showSubdivisions}
+                subdivisionsPerBeat={subdivisionsPerBeat}
                 showNumbers={showNumbers}
                 countdown={countdown}
                 color={color}
