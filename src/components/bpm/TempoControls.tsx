@@ -1,4 +1,4 @@
-import { type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { maxBpm, minBpm, defaultBpm } from "../constants";
 import { Button } from "../ui/button";
 import {
@@ -8,7 +8,14 @@ import {
 } from "../ui/input-group";
 import { Slider } from "../ui/slider";
 import BpmVisualCue from "./BpmVisualCue";
-import { Pause, Play } from "lucide-react";
+import { MousePointerClick, Pause, Play } from "lucide-react";
+import {
+    estimateTapTempoFromElapsedMs,
+    registerTempoTap,
+    tapResetAfterMs,
+} from "./tapTempo";
+
+const tapStatusVisibleMs = 5000;
 
 interface TempoControlsProps {
     bpm: number;
@@ -41,8 +48,81 @@ export function TempoControls({
     onBpmChange,
     onToggle,
 }: TempoControlsProps) {
+    const tapTimesRef = useRef<number[]>([]);
+    const tapFeedbackIntervalRef = useRef<number | undefined>(undefined);
+    const tapFeedbackTimeoutRef = useRef<number | undefined>(undefined);
+    const [tapStatus, setTapStatus] = useState<{
+        bpm: number;
+        suffix: string;
+    } | null>(null);
+
+    useEffect(
+        () => () => {
+            if (tapFeedbackIntervalRef.current !== undefined) {
+                window.clearInterval(tapFeedbackIntervalRef.current);
+            }
+            if (tapFeedbackTimeoutRef.current !== undefined) {
+                window.clearTimeout(tapFeedbackTimeoutRef.current);
+            }
+        },
+        [],
+    );
+
     const onButtonChange = (value: number) => {
         onBpmChange(Math.min(maxBpm, Math.max(minBpm, bpm + value)));
+    };
+
+    const onTapTempo = () => {
+        const tappedAt = performance.now();
+        const result = registerTempoTap(tapTimesRef.current, tappedAt);
+        tapTimesRef.current = result.tapTimes;
+
+        if (tapFeedbackTimeoutRef.current !== undefined) {
+            window.clearTimeout(tapFeedbackTimeoutRef.current);
+            tapFeedbackTimeoutRef.current = undefined;
+        }
+        if (tapFeedbackIntervalRef.current !== undefined) {
+            window.clearInterval(tapFeedbackIntervalRef.current);
+            tapFeedbackIntervalRef.current = undefined;
+        }
+
+        if (result.bpm === null) {
+            const updateProjectedTempo = () => {
+                const elapsedMs = performance.now() - tappedAt;
+                setTapStatus({
+                    bpm: estimateTapTempoFromElapsedMs(elapsedMs),
+                    suffix: "BPM · tap again to confirm",
+                });
+            };
+
+            updateProjectedTempo();
+            tapFeedbackIntervalRef.current = window.setInterval(
+                updateProjectedTempo,
+                50,
+            );
+            tapFeedbackTimeoutRef.current = window.setTimeout(() => {
+                if (tapFeedbackIntervalRef.current !== undefined) {
+                    window.clearInterval(tapFeedbackIntervalRef.current);
+                    tapFeedbackIntervalRef.current = undefined;
+                }
+                tapFeedbackTimeoutRef.current = undefined;
+                tapTimesRef.current = [];
+                setTapStatus(null);
+            }, tapResetAfterMs);
+            return;
+        }
+
+        onBpmChange(result.bpm);
+        const estimatedBpm = result.bpm;
+        setTapStatus({
+            bpm: estimatedBpm,
+            suffix: "BPM · tap again to refine",
+        });
+        tapFeedbackTimeoutRef.current = window.setTimeout(() => {
+            tapFeedbackTimeoutRef.current = undefined;
+            tapTimesRef.current = [];
+            setTapStatus(null);
+        }, tapStatusVisibleMs);
     };
 
     const onInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +166,35 @@ export function TempoControls({
                         </span>
                     </InputGroupAddon>
                 </InputGroup>
+                <Button
+                    className="h-14 gap-2 px-3"
+                    variant="outline"
+                    disabled={isPlaybackActive}
+                    onClick={onTapTempo}
+                >
+                    <MousePointerClick className="size-4" />
+                    Tap tempo
+                </Button>
+            </div>
+            <div
+                className="flex min-h-5 items-center justify-center text-sm text-muted-foreground"
+                role="status"
+                aria-live="polite"
+            >
+                {tapStatus && (
+                    <>
+                        <span>
+                            Estimated tempo:{" "}
+                            <span
+                                className="font-semibold tabular-nums"
+                                style={{ color }}
+                            >
+                                {tapStatus.bpm}
+                            </span>{" "}
+                            {tapStatus.suffix}
+                        </span>
+                    </>
+                )}
             </div>
             <Slider
                 aria-label="Tempo in beats per minute"
