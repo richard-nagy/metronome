@@ -9,6 +9,7 @@ interface BpmCircleProps {
     active: boolean;
     bpm: number;
     subdivision: boolean;
+    compoundPulse?: boolean;
     mainCircleSizeClass?: string;
     subdivisionSizeClass?: string;
     visible: boolean;
@@ -21,6 +22,7 @@ export default function BpmCircle({
     active,
     bpm,
     subdivision,
+    compoundPulse = false,
     mainCircleSizeClass = "size-12 border-2",
     subdivisionSizeClass = "size-3",
     visible,
@@ -55,13 +57,18 @@ export default function BpmCircle({
                 subdivision && "bg-foreground/25",
                 !first && !subdivision && "border-foreground",
                 !first && active && "text-background",
+                compoundPulse && !subdivision && !first && "opacity-60",
                 !visible && "invisible",
-                pulse ? "pulsate-bck" : "",
+                pulse
+                    ? compoundPulse && !subdivision
+                        ? "enchanted-pulse"
+                        : "pulsate-bck"
+                    : "",
                 !active ? "paused" : "",
             )}
             style={
                 {
-                    ...(first
+                    ...(first || (compoundPulse && !subdivision)
                         ? {
                               borderColor: color,
                               backgroundColor: active ? color : undefined,
@@ -71,6 +78,7 @@ export default function BpmCircle({
                           ? { backgroundColor: color }
                           : {}),
                     "--pulse-duration": `${pulseInterval}s`,
+                    "--pulse-color": color,
                 } as CSSProperties & Record<string, string>
             }
         >

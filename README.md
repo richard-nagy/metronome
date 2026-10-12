@@ -7,7 +7,9 @@ A customizable web metronome for practicing in time. Set the tempo, choose the b
 ## Features
 
 - Set the tempo from 40 to 300 BPM and adjust it with the slider or step buttons.
-- Choose 2 to 8 beats per bar and optionally show subdivisions and beat numbers.
+- Choose a time signature from 2/4 through 8/4, or use compound meters 3/8, 6/8, 9/8, and 12/8.
+- Compound meters group eighth notes in threes; 6/8 is felt as two main pulses per bar.
+- Choose subdivisions in simple meters and optionally show beat numbers.
 - Play clicks on every tick, on full beats, or only on the first beat of each bar.
 - Configure output volume and an optional count-in.
 - Gradually ramp the tempo by a chosen amount after a set number of bars.

@@ -1,4 +1,4 @@
-import { SubdivisionMode } from "@/types/types";
+import { SubdivisionMode, TimeSignature } from "@/types/types";
 
 export const defaultBeatCounter = 4;
 export const minBeatCounter = 2;
@@ -16,6 +16,8 @@ export const sPerMinute = 60;
 export const msPerMinute = 60000;
 export const msPerSecond = 1000;
 
+export const timeSignatureOptions = Object.values(TimeSignature);
+
 export function getSubdivisionsPerBeat(mode: SubdivisionMode): number {
     switch (mode) {
         case SubdivisionMode.Eighths:
@@ -27,4 +29,30 @@ export function getSubdivisionsPerBeat(mode: SubdivisionMode): number {
         case SubdivisionMode.Off:
             return 1;
     }
+}
+
+export interface TimeSignatureConfig {
+    beatsPerBar: number;
+    subdivisionsPerBeat: number;
+    compound: boolean;
+}
+
+export function getTimeSignatureConfig(
+    timeSignature: TimeSignature,
+    subdivisionMode: SubdivisionMode,
+): TimeSignatureConfig {
+    if (timeSignature.endsWith("/8")) {
+        const numerator = Number(timeSignature.split("/")[0]);
+        return {
+            beatsPerBar: numerator / 3,
+            subdivisionsPerBeat: 3,
+            compound: true,
+        };
+    }
+
+    return {
+        beatsPerBar: Number(timeSignature.split("/")[0]),
+        subdivisionsPerBeat: getSubdivisionsPerBeat(subdivisionMode),
+        compound: false,
+    };
 }

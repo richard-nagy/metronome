@@ -139,6 +139,27 @@
     animation-play-state: running;
 }
 
+@keyframes enchanted-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 transparent;
+    }
+    40% {
+        transform: scale(1.03);
+        box-shadow: 0 0 8px 2px
+            color-mix(in srgb, var(--pulse-color) 45%, transparent);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 transparent;
+    }
+}
+
+.enchanted-pulse {
+    animation: enchanted-pulse var(--pulse-duration, 0.25s) ease-in-out 1 both;
+    animation-play-state: running;
+}
+
 .paused {
     animation-play-state: paused !important;
 }

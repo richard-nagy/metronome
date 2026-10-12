@@ -1,18 +1,17 @@
-import { SoundOption, SubdivisionMode } from "@/types/types";
+import { SoundOption, SubdivisionMode, TimeSignature } from "@/types/types";
 import { useEffect, useState } from "react";
 import {
-    defaultBeatCounter,
     defaultBpm,
     defaultBpmRampAmount,
     defaultBpmRampBars,
-    maxBpmRampAmount,
-    maxBpmRampBars,
     maxBeatCounter,
     maxBpm,
-    minBpmRampAmount,
-    minBpmRampBars,
+    maxBpmRampAmount,
+    maxBpmRampBars,
     minBeatCounter,
     minBpm,
+    minBpmRampAmount,
+    minBpmRampBars,
 } from "../constants";
 
 interface MetronomeSettings {
@@ -21,9 +20,9 @@ interface MetronomeSettings {
     bpmRampBars: number;
     bpmRampAmount: number;
     subdivisionMode: SubdivisionMode;
+    timeSignature: TimeSignature;
     showNumbers: boolean;
     countInEnabled: boolean;
-    beatCounter: number;
     volume: number;
     soundOption: SoundOption;
 }
@@ -36,9 +35,9 @@ const defaultSettings: MetronomeSettings = {
     bpmRampBars: defaultBpmRampBars,
     bpmRampAmount: defaultBpmRampAmount,
     subdivisionMode: SubdivisionMode.Off,
+    timeSignature: TimeSignature.FourFour,
     showNumbers: false,
     countInEnabled: true,
-    beatCounter: defaultBeatCounter,
     volume: 1,
     soundOption: SoundOption.Full,
 };
@@ -56,7 +55,15 @@ function loadSettings(): MetronomeSettings {
 
         const stored = JSON.parse(storedValue) as Partial<MetronomeSettings> & {
             showSubdivisions?: boolean;
+            beatCounter?: number;
         };
+        const migratedTimeSignature =
+            typeof stored.beatCounter === "number" &&
+            Number.isInteger(stored.beatCounter) &&
+            stored.beatCounter >= minBeatCounter &&
+            stored.beatCounter <= maxBeatCounter
+                ? (`${stored.beatCounter}/4` as TimeSignature)
+                : defaultSettings.timeSignature;
         return {
             bpm:
                 typeof stored.bpm === "number" && Number.isFinite(stored.bpm)
@@ -92,6 +99,11 @@ function loadSettings(): MetronomeSettings {
                 : stored.showSubdivisions === true
                   ? SubdivisionMode.Eighths
                   : SubdivisionMode.Off,
+            timeSignature: Object.values(TimeSignature).includes(
+                stored.timeSignature as TimeSignature,
+            )
+                ? (stored.timeSignature as TimeSignature)
+                : migratedTimeSignature,
             showNumbers:
                 typeof stored.showNumbers === "boolean"
                     ? stored.showNumbers
@@ -100,14 +112,6 @@ function loadSettings(): MetronomeSettings {
                 typeof stored.countInEnabled === "boolean"
                     ? stored.countInEnabled
                     : defaultSettings.countInEnabled,
-            beatCounter:
-                typeof stored.beatCounter === "number" &&
-                Number.isInteger(stored.beatCounter)
-                    ? Math.min(
-                          maxBeatCounter,
-                          Math.max(minBeatCounter, stored.beatCounter),
-                      )
-                    : defaultSettings.beatCounter,
             volume:
                 typeof stored.volume === "number" &&
                 Number.isFinite(stored.volume)

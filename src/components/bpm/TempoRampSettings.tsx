@@ -52,7 +52,7 @@ export function TempoRampSettings({
     };
 
     return (
-        <section className="flex flex-col gap-4 sm:col-span-full sm:row-start-3">
+        <section className="flex flex-col gap-4 sm:col-span-full sm:row-start-5">
             <div className="flex items-center justify-between">
                 <Label htmlFor="bpm-ramp-enabled">Tempo ramp</Label>
                 <Switch

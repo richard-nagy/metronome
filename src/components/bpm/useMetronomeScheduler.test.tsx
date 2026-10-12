@@ -17,6 +17,7 @@ interface MockSource {
 let currentResult: ReturnType<typeof useMetronomeScheduler>;
 let root: Root | undefined;
 let sources: MockSource[];
+let gainLevels: number[];
 
 function HookHarness({ config }: { config: SchedulerProps }) {
     currentResult = useMetronomeScheduler(config);
@@ -31,6 +32,7 @@ function makeConfig(overrides: Partial<SchedulerProps> = {}): SchedulerProps {
         bpmRampAmount: 5,
         beatsPerBar: 4,
         subdivisionsPerBeat: 1,
+        compoundMeter: false,
         countInEnabled: false,
         volume: 1,
         soundOption: SoundOption.All,
@@ -81,6 +83,7 @@ beforeEach(() => {
     vi.setSystemTime(new Date(0));
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     sources = [];
+    gainLevels = [];
 
     const audioContext = {
         get currentTime() {
@@ -95,7 +98,9 @@ beforeEach(() => {
         ) as unknown as AudioContext["decodeAudioData"],
         createGain: vi.fn(() => ({
             gain: {
-                setValueAtTime: vi.fn(),
+                setValueAtTime: vi.fn((value: number) =>
+                    gainLevels.push(value),
+                ),
                 exponentialRampToValueAtTime: vi.fn(),
             },
             connect: vi.fn(),
@@ -224,6 +229,27 @@ describe("useMetronomeScheduler", () => {
         });
 
         expect(sources).toHaveLength(3);
+    });
+
+    it("boosts compound main pulses slightly above the configured volume", async () => {
+        mountScheduler(
+            makeConfig({
+                bpm: 120,
+                beatsPerBar: 2,
+                subdivisionsPerBeat: 3,
+                compoundMeter: true,
+                volume: 0.5,
+                soundOption: SoundOption.Full,
+            }),
+        );
+
+        await startScheduler();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(900);
+        });
+
+        expect(sources).toHaveLength(2);
+        expect(gainLevels).toEqual([0.55, 0.55]);
     });
 
     it("falls back to oscillator clicks when the sound asset fails to load", async () => {

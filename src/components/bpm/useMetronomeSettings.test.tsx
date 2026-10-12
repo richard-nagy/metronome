@@ -1,9 +1,8 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SoundOption, SubdivisionMode } from "@/types/types";
+import { SoundOption, SubdivisionMode, TimeSignature } from "@/types/types";
 import {
-    defaultBeatCounter,
     defaultBpm,
     defaultBpmRampAmount,
     defaultBpmRampBars,
@@ -52,6 +51,7 @@ describe("useMetronomeSettings", () => {
             settingsResult.updateSettings({
                 bpm: 148,
                 subdivisionMode: SubdivisionMode.Triplets,
+                timeSignature: TimeSignature.SixEight,
                 soundOption: SoundOption.First,
             });
         });
@@ -62,8 +62,22 @@ describe("useMetronomeSettings", () => {
         expect(settingsResult.settings).toMatchObject({
             bpm: 148,
             subdivisionMode: SubdivisionMode.Triplets,
+            timeSignature: TimeSignature.SixEight,
             soundOption: SoundOption.First,
         });
+    });
+
+    it("migrates a saved beat count to a quarter-note time signature", () => {
+        localStorage.setItem(
+            settingsStorageKey,
+            JSON.stringify({ beatCounter: 6 }),
+        );
+
+        mountSettings();
+
+        expect(settingsResult.settings.timeSignature).toBe(
+            TimeSignature.SixFour,
+        );
     });
 
     it("migrates enabled legacy subdivisions to eighth notes", () => {
@@ -92,7 +106,7 @@ describe("useMetronomeSettings", () => {
             subdivisionMode: SubdivisionMode.Off,
             showNumbers: false,
             countInEnabled: true,
-            beatCounter: defaultBeatCounter,
+            timeSignature: TimeSignature.FourFour,
             volume: 1,
             soundOption: SoundOption.Full,
         });
@@ -122,7 +136,7 @@ describe("useMetronomeSettings", () => {
             bpmRampEnabled: false,
             bpmRampBars: 1,
             bpmRampAmount: -50,
-            beatCounter: 2,
+            timeSignature: TimeSignature.FourFour,
             volume: 1,
             soundOption: SoundOption.Full,
         });

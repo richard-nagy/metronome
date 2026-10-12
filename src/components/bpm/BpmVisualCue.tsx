@@ -6,6 +6,7 @@ interface BpmVisualCueProps {
     beat: number | undefined;
     isRunning: boolean;
     subdivisionsPerBeat: number;
+    compoundMeter: boolean;
     showNumbers: boolean;
     countdown: number | null;
     color: string;
@@ -16,6 +17,7 @@ const BpmVisualCue = ({
     beat,
     isRunning,
     subdivisionsPerBeat,
+    compoundMeter,
     showNumbers,
     countdown,
     color,
@@ -57,6 +59,7 @@ const BpmVisualCue = ({
                                         }
                                         subdivision={false}
                                         mainCircleSizeClass="size-13 border-2"
+                                        compoundPulse={compoundMeter}
                                         visible
                                     />
                                     {subdivisionsPerBeat > 1 && (
@@ -81,7 +84,10 @@ const BpmVisualCue = ({
                                                         <BpmCircle
                                                             key={tickWithinBeat}
                                                             text=""
-                                                            bpm={bpm}
+                                                            bpm={
+                                                                bpm *
+                                                                subdivisionsPerBeat
+                                                            }
                                                             color={color}
                                                             first={false}
                                                             active={

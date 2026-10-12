@@ -1,7 +1,8 @@
 import { getColorFromRange } from "@/lib/utils";
-import { SubdivisionMode } from "@/types/types";
-import { getSubdivisionsPerBeat, maxBpm, minBpm } from "../constants";
+import { SubdivisionMode, TimeSignature } from "@/types/types";
+import { getTimeSignatureConfig, maxBpm, minBpm } from "../constants";
 import { useResolvedTheme } from "../ui/useResolvedTheme";
+import { DisplaySettings } from "./DisplaySettings";
 import { RhythmSettings } from "./RhythmSettings";
 import { SoundSettings } from "./SoundSettings";
 import { TempoControls } from "./TempoControls";
@@ -20,10 +21,11 @@ const BpmContainer = () => {
         subdivisionMode,
         showNumbers,
         countInEnabled,
-        beatCounter,
+        timeSignature,
         volume,
         soundOption,
     } = settings;
+    const meter = getTimeSignatureConfig(timeSignature, subdivisionMode);
     const resolvedTheme = useResolvedTheme();
     const { beat, isRunning, countdown, isCountingIn, toggle } =
         useMetronomeScheduler({
@@ -31,8 +33,9 @@ const BpmContainer = () => {
             bpmRampEnabled,
             bpmRampBars,
             bpmRampAmount,
-            beatsPerBar: beatCounter,
-            subdivisionsPerBeat: getSubdivisionsPerBeat(subdivisionMode),
+            beatsPerBar: meter.beatsPerBar,
+            subdivisionsPerBeat: meter.subdivisionsPerBeat,
+            compoundMeter: meter.compound,
             countInEnabled,
             volume,
             soundOption,
@@ -44,7 +47,7 @@ const BpmContainer = () => {
         subdivisionMode?: SubdivisionMode;
         showNumbers?: boolean;
         countInEnabled?: boolean;
-        beatCounter?: number;
+        timeSignature?: TimeSignature;
     }) => {
         updateSettings(updates);
     };
@@ -54,8 +57,7 @@ const BpmContainer = () => {
     //#endregion
 
     //#region Derived values
-    const subdivisionsPerBeat = getSubdivisionsPerBeat(subdivisionMode);
-    const tickRate = bpm * subdivisionsPerBeat;
+    const subdivisionsPerBeat = meter.subdivisionsPerBeat;
     const color = getColorFromRange(bpm, minBpm, maxBpm, resolvedTheme);
     //#endregion
 
@@ -67,15 +69,15 @@ const BpmContainer = () => {
         <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4 px-4">
             <TempoControls
                 bpm={bpm}
-                beatCounter={beatCounter}
+                beatCounter={meter.beatsPerBar}
                 beat={beat}
                 isRunning={isRunning}
                 isCountingIn={isCountingIn}
                 isPlaybackActive={isPlaybackActive}
                 subdivisionsPerBeat={subdivisionsPerBeat}
+                compoundMeter={meter.compound}
                 showNumbers={showNumbers}
                 countdown={countdown}
-                tickRate={tickRate}
                 color={color}
                 onBpmChange={(nextBpm) =>
                     updateTimingSettings({ bpm: nextBpm })
@@ -98,22 +100,17 @@ const BpmContainer = () => {
                     className="h-px w-full bg-border sm:hidden"
                 />
                 <RhythmSettings
-                    beatCounter={beatCounter}
+                    timeSignature={timeSignature}
+                    compoundMeter={meter.compound}
                     subdivisionMode={subdivisionMode}
-                    showNumbers={showNumbers}
-                    countInEnabled={countInEnabled}
                     isPlaybackActive={isPlaybackActive}
-                    onBeatCounterChange={(nextBeatCounter) =>
-                        updateTimingSettings({ beatCounter: nextBeatCounter })
+                    onTimeSignatureChange={(nextTimeSignature) =>
+                        updateTimingSettings({
+                            timeSignature: nextTimeSignature,
+                        })
                     }
                     onSubdivisionModeChange={(mode) =>
                         updateTimingSettings({ subdivisionMode: mode })
-                    }
-                    onNumbersChange={(checked) =>
-                        updateTimingSettings({ showNumbers: checked })
-                    }
-                    onCountInChange={(checked) =>
-                        updateTimingSettings({ countInEnabled: checked })
                     }
                 />
                 <div
@@ -123,6 +120,20 @@ const BpmContainer = () => {
                 <div
                     aria-hidden="true"
                     className="h-px w-full bg-border sm:col-span-full sm:row-start-2"
+                />
+                <DisplaySettings
+                    showNumbers={showNumbers}
+                    countInEnabled={countInEnabled}
+                    onNumbersChange={(checked) =>
+                        updateTimingSettings({ showNumbers: checked })
+                    }
+                    onCountInChange={(checked) =>
+                        updateTimingSettings({ countInEnabled: checked })
+                    }
+                />
+                <div
+                    aria-hidden="true"
+                    className="h-px w-full bg-border sm:col-span-full sm:row-start-4"
                 />
                 <TempoRampSettings
                     enabled={bpmRampEnabled}

@@ -25,9 +25,9 @@ interface TempoControlsProps {
     isCountingIn: boolean;
     isPlaybackActive: boolean;
     subdivisionsPerBeat: number;
+    compoundMeter: boolean;
     showNumbers: boolean;
     countdown: number | null;
-    tickRate: number;
     color: string;
     onBpmChange: (bpm: number) => void;
     onToggle: () => void;
@@ -41,9 +41,9 @@ export function TempoControls({
     isCountingIn,
     isPlaybackActive,
     subdivisionsPerBeat,
+    compoundMeter,
     showNumbers,
     countdown,
-    tickRate,
     color,
     onBpmChange,
     onToggle,
@@ -138,10 +138,11 @@ export function TempoControls({
         <>
             <BpmVisualCue
                 beatCounter={beatCounter}
-                bpm={tickRate}
+                bpm={bpm}
                 beat={beat}
                 isRunning={isRunning}
                 subdivisionsPerBeat={subdivisionsPerBeat}
+                compoundMeter={compoundMeter}
                 showNumbers={showNumbers}
                 countdown={countdown}
                 color={color}

@@ -9,6 +9,7 @@ interface UseMetronomeSchedulerProps {
     bpmRampAmount: number;
     beatsPerBar: number;
     subdivisionsPerBeat: number;
+    compoundMeter: boolean;
     countInEnabled: boolean;
     volume: number;
     soundOption: SoundOption;
@@ -61,6 +62,7 @@ export function useMetronomeScheduler({
     bpmRampAmount,
     beatsPerBar,
     subdivisionsPerBeat,
+    compoundMeter,
     countInEnabled,
     volume,
     soundOption,
@@ -84,6 +86,7 @@ export function useMetronomeScheduler({
         bpmRampAmount,
         beatsPerBar,
         subdivisionsPerBeat,
+        compoundMeter,
         volume,
         soundOption,
         onBpmChange,
@@ -96,6 +99,7 @@ export function useMetronomeScheduler({
         bpmRampAmount,
         beatsPerBar,
         subdivisionsPerBeat,
+        compoundMeter,
         volume,
         soundOption,
         onBpmChange,
@@ -220,7 +224,8 @@ export function useMetronomeScheduler({
                 config.bpm !== observedConfig.bpm ||
                 config.beatsPerBar !== observedConfig.beatsPerBar ||
                 config.subdivisionsPerBeat !==
-                    observedConfig.subdivisionsPerBeat;
+                    observedConfig.subdivisionsPerBeat ||
+                config.compoundMeter !== observedConfig.compoundMeter;
 
             if (timingChanged) {
                 for (const timer of visualTimers) {
@@ -301,7 +306,10 @@ export function useMetronomeScheduler({
                         scheduledBeat === 0);
 
                 if (shouldPlay && config.volume > 0) {
-                    scheduleClick(nextBeatTime, config.volume);
+                    const clickVolume =
+                        config.volume *
+                        (config.compoundMeter && isFullBeat ? 1.1 : 1);
+                    scheduleClick(nextBeatTime, clickVolume);
                 }
 
                 const scheduledTime = nextBeatTime;
