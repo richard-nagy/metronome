@@ -1,0 +1,117 @@
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { SoundOption } from "@/types/types";
+import {
+    defaultBeatCounter,
+    defaultBpm,
+    defaultBpmRampAmount,
+    defaultBpmRampBars,
+} from "../constants";
+import { useMetronomeSettings } from "./useMetronomeSettings";
+
+const settingsStorageKey = "metronome-settings";
+
+let settingsResult: ReturnType<typeof useMetronomeSettings>;
+let root: Root | undefined;
+
+function SettingsHarness() {
+    settingsResult = useMetronomeSettings();
+    return null;
+}
+
+function mountSettings() {
+    root = createRoot(document.createElement("div"));
+    act(() => root?.render(<SettingsHarness />));
+}
+
+function unmountSettings() {
+    if (!root) {
+        return;
+    }
+    act(() => root?.unmount());
+    root = undefined;
+}
+
+beforeEach(() => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    localStorage.clear();
+});
+
+afterEach(() => {
+    unmountSettings();
+    localStorage.clear();
+    vi.unstubAllGlobals();
+});
+
+describe("useMetronomeSettings", () => {
+    it("persists updated settings across remounts", () => {
+        mountSettings();
+
+        act(() => {
+            settingsResult.updateSettings({
+                bpm: 148,
+                showSubdivisions: true,
+                soundOption: SoundOption.First,
+            });
+        });
+        unmountSettings();
+
+        mountSettings();
+
+        expect(settingsResult.settings).toMatchObject({
+            bpm: 148,
+            showSubdivisions: true,
+            soundOption: SoundOption.First,
+        });
+    });
+
+    it("uses defaults and replaces malformed stored JSON", () => {
+        localStorage.setItem(settingsStorageKey, "{");
+
+        mountSettings();
+
+        expect(settingsResult.settings).toMatchObject({
+            bpm: defaultBpm,
+            bpmRampEnabled: false,
+            bpmRampBars: defaultBpmRampBars,
+            bpmRampAmount: defaultBpmRampAmount,
+            showSubdivisions: false,
+            showNumbers: false,
+            countInEnabled: true,
+            beatCounter: defaultBeatCounter,
+            volume: 1,
+            soundOption: SoundOption.Full,
+        });
+        expect(
+            JSON.parse(localStorage.getItem(settingsStorageKey) ?? "{}"),
+        ).toMatchObject(settingsResult.settings);
+    });
+
+    it("clamps out-of-range values and defaults invalid fields", () => {
+        localStorage.setItem(
+            settingsStorageKey,
+            JSON.stringify({
+                bpm: 500,
+                bpmRampEnabled: "true",
+                bpmRampBars: 0,
+                bpmRampAmount: -100,
+                beatCounter: 1,
+                volume: 2,
+                soundOption: "invalid",
+            }),
+        );
+
+        mountSettings();
+
+        expect(settingsResult.settings).toMatchObject({
+            bpm: 300,
+            bpmRampEnabled: false,
+            bpmRampBars: 1,
+            bpmRampAmount: -50,
+            beatCounter: 2,
+            volume: 1,
+            soundOption: SoundOption.Full,
+        });
+    });
+});

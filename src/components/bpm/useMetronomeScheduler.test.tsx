@@ -2,6 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SoundOption } from "@/types/types";
+import { maxBpm, minBpm } from "../constants";
 import { useMetronomeScheduler } from "./useMetronomeScheduler";
 
 type SchedulerProps = Parameters<typeof useMetronomeScheduler>[0];
@@ -41,6 +42,13 @@ function makeConfig(overrides: Partial<SchedulerProps> = {}): SchedulerProps {
 function mountScheduler(config: SchedulerProps) {
     const container = document.createElement("div");
     root = createRoot(container);
+    act(() => root?.render(<HookHarness config={config} />));
+}
+
+function updateScheduler(config: SchedulerProps) {
+    if (!root) {
+        throw new Error("Scheduler has not been mounted");
+    }
     act(() => root?.render(<HookHarness config={config} />));
 }
 
@@ -149,6 +157,21 @@ describe("useMetronomeScheduler", () => {
         expect(currentResult.isRunning).toBe(false);
     });
 
+    it("starts playback after the count-in completes", async () => {
+        mountScheduler(makeConfig({ countInEnabled: true }));
+
+        await act(async () => {
+            currentResult.toggle();
+            await flushPromises();
+        });
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(2000);
+        });
+
+        expect(currentResult.countdown).toBeNull();
+        expect(currentResult.isRunning).toBe(true);
+    });
+
     it("plays subdivision clicks on full beats only", async () => {
         mountScheduler(
             makeConfig({
@@ -166,13 +189,89 @@ describe("useMetronomeScheduler", () => {
         expect(sources).toHaveLength(2);
     });
 
-    it("ramps the tempo after the configured number of bars", async () => {
+    it("falls back to oscillator clicks when the sound asset fails to load", async () => {
+        vi.stubGlobal(
+            "fetch",
+            vi.fn(async () => {
+                throw new Error("Sound asset unavailable");
+            }),
+        );
+        mountScheduler(makeConfig());
+
+        await startScheduler();
+
+        expect(sources).toHaveLength(1);
+        expect(sources[0]?.start).toHaveBeenCalledWith(0.05);
+        expect(sources[0]?.stop.mock.calls[0]?.[0]).toBeCloseTo(0.09);
+    });
+
+    it("plays only the first beat of each bar", async () => {
+        mountScheduler(
+            makeConfig({
+                beatsPerBar: 2,
+                soundOption: SoundOption.First,
+            }),
+        );
+
+        await startScheduler();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(1100);
+        });
+
+        expect(sources).toHaveLength(2);
+    });
+
+    it("reschedules queued clicks when the tempo changes during playback", async () => {
+        const config = makeConfig({ beatsPerBar: 2 });
+        mountScheduler(config);
+
+        await startScheduler();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(500);
+        });
+
+        const queuedClick = sources[1];
+        expect(queuedClick).toBeDefined();
+
+        updateScheduler({ ...config, bpm: 60 });
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(600);
+        });
+
+        expect(queuedClick?.stop).toHaveBeenCalledOnce();
+        expect(sources).toHaveLength(3);
+        expect(sources[2]?.start).toHaveBeenCalledWith(1.05);
+    });
+
+    it("reschedules queued clicks when subdivisions change during playback", async () => {
+        const config = makeConfig();
+        mountScheduler(config);
+
+        await startScheduler();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(500);
+        });
+
+        const queuedClick = sources[1];
+        expect(queuedClick).toBeDefined();
+
+        updateScheduler({ ...config, showSubdivisions: true });
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(100);
+        });
+
+        expect(queuedClick?.stop).toHaveBeenCalledOnce();
+        expect(sources).toHaveLength(3);
+        expect(sources[2]?.start.mock.calls[0]?.[0]).toBeCloseTo(0.545);
+    });
+
+    it("waits the configured number of bars before ramping the tempo", async () => {
         const onBpmChange = vi.fn();
         mountScheduler(
             makeConfig({
                 beatsPerBar: 2,
                 bpmRampEnabled: true,
-                bpmRampBars: 1,
+                bpmRampBars: 2,
                 bpmRampAmount: 5,
                 onBpmChange,
             }),
@@ -180,9 +279,51 @@ describe("useMetronomeScheduler", () => {
 
         await startScheduler();
         await act(async () => {
-            await vi.advanceTimersByTimeAsync(600);
+            await vi.advanceTimersByTimeAsync(1400);
+        });
+        expect(onBpmChange).not.toHaveBeenCalled();
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(300);
         });
 
+        expect(onBpmChange).toHaveBeenCalledOnce();
         expect(onBpmChange).toHaveBeenCalledWith(125);
     });
+
+    it.each([
+        {
+            bpm: maxBpm - 2,
+            bpmRampAmount: 5,
+            expectedBpm: maxBpm,
+            elapsedMs: 600,
+        },
+        {
+            bpm: minBpm + 2,
+            bpmRampAmount: -5,
+            expectedBpm: minBpm,
+            elapsedMs: 1600,
+        },
+    ])(
+        "clamps a ramp from $bpm BPM to $expectedBpm BPM",
+        async ({ bpm, bpmRampAmount, expectedBpm, elapsedMs }) => {
+            const onBpmChange = vi.fn();
+            mountScheduler(
+                makeConfig({
+                    bpm,
+                    beatsPerBar: 2,
+                    bpmRampEnabled: true,
+                    bpmRampAmount,
+                    onBpmChange,
+                }),
+            );
+
+            await startScheduler();
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(elapsedMs);
+            });
+
+            expect(onBpmChange).toHaveBeenCalledWith(expectedBpm);
+        },
+    );
 });
