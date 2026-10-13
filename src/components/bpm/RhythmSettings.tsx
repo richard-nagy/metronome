@@ -1,5 +1,14 @@
 import { SubdivisionMode, TimeSignature } from "@/types/types";
+import { ChevronDown } from "lucide-react";
 import { timeSignatureOptions } from "../constants";
+import { Button } from "../ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
@@ -24,25 +33,39 @@ export function RhythmSettings({
         <section className="flex flex-col gap-4 sm:col-start-3 sm:row-start-1">
             <h2 className="text-sm font-medium">Rhythm</h2>
             <div className="flex items-center justify-between gap-4">
-                <Label htmlFor="time-signature">Time signature</Label>
-                <select
-                    id="time-signature"
-                    aria-label="Time signature"
-                    className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                    value={timeSignature}
-                    disabled={isPlaybackActive}
-                    onChange={(event) =>
-                        onTimeSignatureChange(
-                            event.target.value as TimeSignature,
-                        )
-                    }
-                >
-                    {timeSignatureOptions.map((option) => (
-                        <option key={option} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
+                <Label>Time signature</Label>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            className="h-9 w-24 justify-between px-2 font-normal"
+                            variant="outline"
+                            disabled={isPlaybackActive}
+                            aria-label={`Time signature: ${timeSignature}`}
+                        >
+                            <span>{timeSignature}</span>
+                            <ChevronDown className="size-4 opacity-60" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-32">
+                        <DropdownMenuRadioGroup
+                            value={timeSignature}
+                            aria-label="Time signature"
+                            onValueChange={(value) =>
+                                onTimeSignatureChange(value as TimeSignature)
+                            }
+                        >
+                            {timeSignatureOptions.map((option) => (
+                                <DropdownMenuRadioItem
+                                    key={option}
+                                    value={option}
+                                    disabled={isPlaybackActive}
+                                >
+                                    {option}
+                                </DropdownMenuRadioItem>
+                            ))}
+                        </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             {compoundMeter ? (
                 <div className="flex items-center justify-between">
