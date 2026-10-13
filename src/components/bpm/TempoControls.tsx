@@ -55,6 +55,11 @@ export function TempoControls({
         bpm: number;
         suffix: string;
     } | null>(null);
+    const [bpmInput, setBpmInput] = useState(String(bpm));
+
+    useEffect(() => {
+        setBpmInput(String(bpm));
+    }, [bpm]);
 
     useEffect(
         () => () => {
@@ -125,13 +130,16 @@ export function TempoControls({
         }, tapStatusVisibleMs);
     };
 
-    const onInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.valueAsNumber;
-        if (Number.isNaN(value)) {
+    const commitBpmInput = () => {
+        const value = Number(bpmInput);
+        if (bpmInput.trim() === "" || !Number.isFinite(value)) {
+            setBpmInput(String(bpm));
             return;
         }
 
-        onBpmChange(Math.min(maxBpm, Math.max(minBpm, Math.round(value))));
+        const nextBpm = Math.min(maxBpm, Math.max(minBpm, Math.round(value)));
+        setBpmInput(String(nextBpm));
+        onBpmChange(nextBpm);
     };
 
     return (
@@ -156,10 +164,19 @@ export function TempoControls({
                         min={minBpm}
                         step={1}
                         className="text-4xl md:text-4xl font-bold text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                        value={bpm}
+                        value={bpmInput}
                         style={{ color }}
                         disabled={isPlaybackActive}
-                        onChange={onInputChange}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                            setBpmInput(event.target.value)
+                        }
+                        onBlur={commitBpmInput}
+                        onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                                event.preventDefault();
+                                event.currentTarget.blur();
+                            }
+                        }}
                     />
                     <InputGroupAddon align="inline-end">
                         <span className="font-medium text-secondary-foreground text-3xl">
