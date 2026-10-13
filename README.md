@@ -1,6 +1,6 @@
 # Metronome
 
-A customizable web metronome for practicing in time. Set the tempo, choose the bar length and subdivisions, and configure the click pattern.
+A customizable web metronome for practicing in time. Set the tempo, choose the bar length and subdivisions, pick a click sound, and save named presets for your practice setup.
 
 **Live demo:** https://richard-nagy.github.io/metronome/
 
@@ -10,10 +10,12 @@ A customizable web metronome for practicing in time. Set the tempo, choose the b
 - Choose a time signature from 2/4 through 8/4, or use compound meters 3/8, 6/8, 9/8, and 12/8.
 - Compound meters group eighth notes in threes; 6/8 is felt as two main pulses per bar.
 - Choose subdivisions in simple meters and optionally show beat numbers.
-- Play clicks on every tick, on full beats, or only on the first beat of each bar.
+- Choose from five click sounds: classic click, bell, metronome, square, and woodblock. Preview sounds before playing.
+- Play sounds on every tick, on full beats, or only on the first beat of each bar.
 - Configure output volume and an optional count-in.
 - Gradually ramp the tempo by a chosen amount after a set number of bars.
-- Save settings in the browser and switch between light and dark themes.
+- Save named presets containing the current tempo, rhythm, sound, and display settings. Apply or delete presets from the list.
+- Save settings and presets in the browser, and switch between light and dark themes.
 - Use the responsive interface on desktop or mobile.
 
 ## Run locally
