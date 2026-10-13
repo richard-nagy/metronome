@@ -155,7 +155,7 @@ export function TempoControls({
                 countdown={countdown}
                 color={color}
             />
-            <div className="flex flex-row gap-2 items-center">
+            <div className="flex w-full flex-wrap items-center justify-center gap-2 min-[360px]:flex-nowrap">
                 <InputGroup className="w-40 h-14 ">
                     <InputGroupInput
                         aria-label="Tempo in beats per minute"
@@ -185,7 +185,7 @@ export function TempoControls({
                     </InputGroupAddon>
                 </InputGroup>
                 <Button
-                    className="h-14 gap-2 px-3"
+                    className="h-14 gap-2 px-3 sm:h-14"
                     variant="outline"
                     disabled={isPlaybackActive}
                     onClick={onTapTempo}
@@ -221,14 +221,14 @@ export function TempoControls({
                 max={maxBpm}
                 step={1}
                 thumbColor={color}
-                className="w-82 mt-2 mb-2"
+                className="mt-2 mb-2 w-full max-w-82"
                 disabled={isPlaybackActive}
                 onValueChange={(value) => onBpmChange(value[0] ?? minBpm)}
                 onDoubleClick={() => onBpmChange(defaultBpm)}
             />
-            <div className="flex flex-row justify-center w-full items-center gap-3">
+            <div className="-mx-3 flex w-[calc(100%+1.5rem)] items-center justify-center gap-0 min-[360px]:gap-2 sm:mx-0 sm:w-full sm:gap-3">
                 <Button
-                    className="h-14 w-14"
+                    className="h-14 w-14 sm:h-14 sm:w-14"
                     variant="outline"
                     disabled={isPlaybackActive}
                     onClick={() => onButtonChange(-10)}
@@ -236,7 +236,7 @@ export function TempoControls({
                     -10
                 </Button>
                 <Button
-                    className="h-14 w-14"
+                    className="h-14 w-14 sm:h-14 sm:w-14"
                     variant="outline"
                     disabled={isPlaybackActive}
                     onClick={() => onButtonChange(-1)}
@@ -244,7 +244,7 @@ export function TempoControls({
                     -1
                 </Button>
                 <Button
-                    className="size-14"
+                    className="size-14 sm:size-14"
                     variant="outline"
                     aria-label={
                         isRunning || isCountingIn
@@ -260,7 +260,7 @@ export function TempoControls({
                     )}
                 </Button>
                 <Button
-                    className="h-14 w-14"
+                    className="h-14 w-14 sm:h-14 sm:w-14"
                     variant="outline"
                     disabled={isPlaybackActive}
                     onClick={() => onButtonChange(1)}
@@ -268,7 +268,7 @@ export function TempoControls({
                     +1
                 </Button>
                 <Button
-                    className="h-14 w-14"
+                    className="h-14 w-14 sm:h-14 sm:w-14"
                     variant="outline"
                     disabled={isPlaybackActive}
                     onClick={() => onButtonChange(10)}

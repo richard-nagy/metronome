@@ -75,6 +75,7 @@ export function PresetsSettings({
                 <Label htmlFor="preset-name">Preset name</Label>
                 <Input
                     id="preset-name"
+                    className="h-11 sm:h-9"
                     autoFocus
                     maxLength={40}
                     value={presetName}
@@ -136,7 +137,7 @@ export function PresetsSettings({
                             >
                                 <button
                                     type="button"
-                                    className="flex min-w-0 flex-1 flex-col gap-1 rounded-sm px-2 py-2 text-left outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex min-h-12 min-w-0 flex-1 flex-col gap-1 rounded-sm px-2 py-2 text-left outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-0"
                                     aria-label={`Apply preset ${preset.name}`}
                                     disabled={isPlaybackActive}
                                     onClick={() =>
@@ -154,7 +155,7 @@ export function PresetsSettings({
                                     type="button"
                                     size="icon"
                                     variant="ghost"
-                                    className="size-8 shrink-0"
+                                    className="size-11 shrink-0 sm:size-9"
                                     aria-label={`Delete preset ${preset.name}`}
                                     title={`Delete preset ${preset.name}`}
                                     onClick={() => deletePreset(preset.id)}

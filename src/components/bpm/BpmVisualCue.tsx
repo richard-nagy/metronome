@@ -23,7 +23,7 @@ const BpmVisualCue = ({
     color,
 }: BpmVisualCueProps) => {
     return (
-        <div className="relative flex h-40 w-80 flex-col items-center justify-center gap-2 mt-2">
+        <div className="relative mt-2 flex h-40 w-full max-w-80 flex-col items-center justify-center gap-2">
             {Array.from({ length: Math.ceil(beatCounter / 4) }, (_, row) => {
                 const firstBeat = row * 4;
                 const beatsInRow = Math.min(4, beatCounter - firstBeat);
@@ -39,7 +39,7 @@ const BpmVisualCue = ({
                             return (
                                 <div
                                     key={i}
-                                    className="relative flex size-18 shrink-0 items-center justify-center"
+                                    className="relative flex size-15 shrink-0 items-center justify-center min-[360px]:size-16 sm:size-18"
                                 >
                                     <BpmCircle
                                         text={
@@ -58,7 +58,7 @@ const BpmVisualCue = ({
                                             ) === i
                                         }
                                         subdivision={false}
-                                        mainCircleSizeClass="size-13 border-2"
+                                        mainCircleSizeClass="size-11 border-2 min-[360px]:size-12 sm:size-13"
                                         compoundPulse={compoundMeter}
                                         visible
                                     />

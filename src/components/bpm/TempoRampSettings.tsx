@@ -53,10 +53,16 @@ export function TempoRampSettings({
 
     return (
         <section className="flex flex-col gap-4 sm:col-span-full sm:row-start-5">
-            <div className="flex items-center justify-between">
-                <Label htmlFor="bpm-ramp-enabled">Tempo ramp</Label>
+            <div className="flex min-h-11 items-center justify-between sm:min-h-0">
+                <Label
+                    htmlFor="bpm-ramp-enabled"
+                    className="flex min-h-11 flex-1 cursor-pointer items-center sm:min-h-0"
+                >
+                    Tempo ramp
+                </Label>
                 <Switch
                     id="bpm-ramp-enabled"
+                    className="h-6 w-11 sm:h-[1.15rem] sm:w-8"
                     checked={enabled}
                     disabled={isPlaybackActive}
                     onCheckedChange={onEnabledChange}
@@ -71,7 +77,7 @@ export function TempoRampSettings({
                         className="flex items-center gap-1"
                     >
                         <Button
-                            className="size-9"
+                            className="size-11 sm:size-9"
                             variant="outline"
                             aria-label="Decrease bars between tempo changes"
                             disabled={disabled || bars <= minBpmRampBars}
@@ -90,7 +96,7 @@ export function TempoRampSettings({
                             {bars} {bars === 1 ? "bar" : "bars"}
                         </output>
                         <Button
-                            className="size-9"
+                            className="size-11 sm:size-9"
                             variant="outline"
                             aria-label="Increase bars between tempo changes"
                             disabled={disabled || bars >= maxBpmRampBars}
@@ -104,7 +110,7 @@ export function TempoRampSettings({
                 </div>
                 <div className="flex items-center justify-between gap-4">
                     <Label htmlFor="bpm-ramp-amount">BPM change</Label>
-                    <InputGroup className="w-24">
+                    <InputGroup className="h-11 w-24 sm:h-9">
                         <InputGroupInput
                             id="bpm-ramp-amount"
                             type="number"

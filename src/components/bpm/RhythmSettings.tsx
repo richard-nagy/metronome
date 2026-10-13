@@ -37,7 +37,7 @@ export function RhythmSettings({
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
-                            className="h-9 w-24 justify-between px-2 font-normal"
+                            className="h-11 w-24 justify-between px-2 font-normal sm:h-9"
                             variant="outline"
                             disabled={isPlaybackActive}
                             aria-label={`Time signature: ${timeSignature}`}
@@ -85,37 +85,51 @@ export function RhythmSettings({
                             onSubdivisionModeChange(value as SubdivisionMode)
                         }
                     >
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-h-11 items-center gap-2 sm:min-h-0">
                             <RadioGroupItem
                                 value={SubdivisionMode.Off}
                                 id="subdivisions-off"
                             />
-                            <Label htmlFor="subdivisions-off">Off</Label>
+                            <Label
+                                htmlFor="subdivisions-off"
+                                className="flex min-h-11 flex-1 cursor-pointer items-center sm:min-h-0"
+                            >
+                                Off
+                            </Label>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-h-11 items-center gap-2 sm:min-h-0">
                             <RadioGroupItem
                                 value={SubdivisionMode.Eighths}
                                 id="subdivisions-eighths"
                             />
-                            <Label htmlFor="subdivisions-eighths">
+                            <Label
+                                htmlFor="subdivisions-eighths"
+                                className="flex min-h-11 flex-1 cursor-pointer items-center sm:min-h-0"
+                            >
                                 Eighths
                             </Label>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-h-11 items-center gap-2 sm:min-h-0">
                             <RadioGroupItem
                                 value={SubdivisionMode.Triplets}
                                 id="subdivisions-triplets"
                             />
-                            <Label htmlFor="subdivisions-triplets">
+                            <Label
+                                htmlFor="subdivisions-triplets"
+                                className="flex min-h-11 flex-1 cursor-pointer items-center sm:min-h-0"
+                            >
                                 Triplets
                             </Label>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-h-11 items-center gap-2 sm:min-h-0">
                             <RadioGroupItem
                                 value={SubdivisionMode.Sixteenths}
                                 id="subdivisions-sixteenths"
                             />
-                            <Label htmlFor="subdivisions-sixteenths">
+                            <Label
+                                htmlFor="subdivisions-sixteenths"
+                                className="flex min-h-11 flex-1 cursor-pointer items-center sm:min-h-0"
+                            >
                                 Sixteenths
                             </Label>
                         </div>

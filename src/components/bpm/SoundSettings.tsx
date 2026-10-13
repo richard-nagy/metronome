@@ -43,7 +43,7 @@ export function SoundSettings({
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
-                                className="h-9 w-34 justify-between px-3 font-normal"
+                                className="h-11 w-34 justify-between px-3 font-normal sm:h-9"
                                 variant="outline"
                                 disabled={isPlaybackActive}
                                 aria-label={`Metronome sound: ${soundOptions.find((option) => option.id === soundId)?.label ?? "Classic click"}`}
@@ -78,7 +78,7 @@ export function SoundSettings({
                     </DropdownMenu>
                 </div>
                 <Button
-                    className="size-9 shrink-0"
+                    className="size-11 shrink-0 sm:size-9"
                     variant="ghost"
                     aria-label="Preview selected sound"
                     title="Preview selected sound"
@@ -90,7 +90,7 @@ export function SoundSettings({
             </div>
             <div className="flex items-center gap-3">
                 <Button
-                    className="size-9 shrink-0"
+                    className="size-11 shrink-0 sm:size-9"
                     variant="ghost"
                     aria-label={volume === 0 ? "Unmute" : "Mute"}
                     onClick={() => onVolumeChange(volume === 0 ? 1 : 0)}
@@ -121,17 +121,32 @@ export function SoundSettings({
                     onSoundOptionChange(value as SoundOption)
                 }
             >
-                <div className="flex items-center gap-3">
+                <div className="flex min-h-11 items-center gap-3 sm:min-h-0">
                     <RadioGroupItem value={SoundOption.All} id="r1" />
-                    <Label htmlFor="r1">On all beats</Label>
+                    <Label
+                        htmlFor="r1"
+                        className="flex min-h-11 flex-1 cursor-pointer items-center sm:min-h-0"
+                    >
+                        On all beats
+                    </Label>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex min-h-11 items-center gap-3 sm:min-h-0">
                     <RadioGroupItem value={SoundOption.Full} id="r2" />
-                    <Label htmlFor="r2">On full beats</Label>
+                    <Label
+                        htmlFor="r2"
+                        className="flex min-h-11 flex-1 cursor-pointer items-center sm:min-h-0"
+                    >
+                        On full beats
+                    </Label>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex min-h-11 items-center gap-3 sm:min-h-0">
                     <RadioGroupItem value={SoundOption.First} id="r3" />
-                    <Label htmlFor="r3">On first beat</Label>
+                    <Label
+                        htmlFor="r3"
+                        className="flex min-h-11 flex-1 cursor-pointer items-center sm:min-h-0"
+                    >
+                        On first beat
+                    </Label>
                 </div>
             </RadioGroup>
         </section>
