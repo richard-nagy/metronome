@@ -2,6 +2,7 @@ import BpmContainer from "../bpm/BpmContainer";
 import { ThemeToggle } from "../ThemeToggle";
 import { Button } from "../ui/button";
 import { ExternalLink } from "lucide-react";
+import packageJson from "../../../package.json";
 
 export default function Layout() {
     return (
@@ -14,6 +15,13 @@ export default function Layout() {
                         className="size-8"
                     />
                     <h1 className="text-xl">Metronome</h1>
+                    <span
+                        className="text-xs text-muted-foreground pt-1"
+                        aria-label={`Version ${packageJson.version}`}
+                        title={`Version ${packageJson.version}`}
+                    >
+                        v{packageJson.version}
+                    </span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button asChild size="icon" variant="ghost">

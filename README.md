@@ -1,8 +1,10 @@
-# Metronome
+# Metronome v1.0.0
 
 A customizable web metronome for practicing in time. Set the tempo, choose the bar length and subdivisions, pick a click sound, and save named presets for your practice setup.
 
 **Live demo:** https://richard-nagy.github.io/metronome/
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## Features
 
