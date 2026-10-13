@@ -49,6 +49,86 @@ const defaultSettings: MetronomeSettings = {
     soundId: SoundId.Click,
 };
 
+type StoredMetronomeSettings = Partial<MetronomeSettings> & {
+    showSubdivisions?: boolean;
+    beatCounter?: number;
+};
+
+export function normalizeMetronomeSettings(value: unknown): MetronomeSettings {
+    const stored = (
+        typeof value === "object" && value !== null ? value : {}
+    ) as StoredMetronomeSettings;
+    const migratedTimeSignature =
+        typeof stored.beatCounter === "number" &&
+        Number.isInteger(stored.beatCounter) &&
+        stored.beatCounter >= minBeatCounter &&
+        stored.beatCounter <= maxBeatCounter
+            ? (`${stored.beatCounter}/4` as TimeSignature)
+            : defaultSettings.timeSignature;
+
+    return {
+        bpm:
+            typeof stored.bpm === "number" && Number.isFinite(stored.bpm)
+                ? Math.min(maxBpm, Math.max(minBpm, Math.round(stored.bpm)))
+                : defaultSettings.bpm,
+        bpmRampEnabled:
+            typeof stored.bpmRampEnabled === "boolean"
+                ? stored.bpmRampEnabled
+                : defaultSettings.bpmRampEnabled,
+        bpmRampBars:
+            typeof stored.bpmRampBars === "number" &&
+            Number.isInteger(stored.bpmRampBars)
+                ? Math.min(
+                      maxBpmRampBars,
+                      Math.max(minBpmRampBars, stored.bpmRampBars),
+                  )
+                : defaultSettings.bpmRampBars,
+        bpmRampAmount:
+            typeof stored.bpmRampAmount === "number" &&
+            Number.isFinite(stored.bpmRampAmount)
+                ? Math.min(
+                      maxBpmRampAmount,
+                      Math.max(
+                          minBpmRampAmount,
+                          Math.round(stored.bpmRampAmount),
+                      ),
+                  )
+                : defaultSettings.bpmRampAmount,
+        subdivisionMode: Object.values(SubdivisionMode).includes(
+            stored.subdivisionMode as SubdivisionMode,
+        )
+            ? (stored.subdivisionMode as SubdivisionMode)
+            : stored.showSubdivisions === true
+              ? SubdivisionMode.Eighths
+              : SubdivisionMode.Off,
+        timeSignature: Object.values(TimeSignature).includes(
+            stored.timeSignature as TimeSignature,
+        )
+            ? (stored.timeSignature as TimeSignature)
+            : migratedTimeSignature,
+        showNumbers:
+            typeof stored.showNumbers === "boolean"
+                ? stored.showNumbers
+                : defaultSettings.showNumbers,
+        countInEnabled:
+            typeof stored.countInEnabled === "boolean"
+                ? stored.countInEnabled
+                : defaultSettings.countInEnabled,
+        volume:
+            typeof stored.volume === "number" && Number.isFinite(stored.volume)
+                ? Math.min(1, Math.max(0, stored.volume))
+                : defaultSettings.volume,
+        soundOption: Object.values(SoundOption).includes(
+            stored.soundOption as SoundOption,
+        )
+            ? (stored.soundOption as SoundOption)
+            : defaultSettings.soundOption,
+        soundId: Object.values(SoundId).includes(stored.soundId as SoundId)
+            ? (stored.soundId as SoundId)
+            : defaultSettings.soundId,
+    };
+}
+
 function loadSettings(): MetronomeSettings {
     if (typeof window === "undefined") {
         return defaultSettings;
@@ -56,83 +136,9 @@ function loadSettings(): MetronomeSettings {
 
     try {
         const storedValue = localStorage.getItem(settingsStorageKey);
-        if (!storedValue) {
-            return defaultSettings;
-        }
-
-        const stored = JSON.parse(storedValue) as Partial<MetronomeSettings> & {
-            showSubdivisions?: boolean;
-            beatCounter?: number;
-        };
-        const migratedTimeSignature =
-            typeof stored.beatCounter === "number" &&
-            Number.isInteger(stored.beatCounter) &&
-            stored.beatCounter >= minBeatCounter &&
-            stored.beatCounter <= maxBeatCounter
-                ? (`${stored.beatCounter}/4` as TimeSignature)
-                : defaultSettings.timeSignature;
-        return {
-            bpm:
-                typeof stored.bpm === "number" && Number.isFinite(stored.bpm)
-                    ? Math.min(maxBpm, Math.max(minBpm, Math.round(stored.bpm)))
-                    : defaultSettings.bpm,
-            bpmRampEnabled:
-                typeof stored.bpmRampEnabled === "boolean"
-                    ? stored.bpmRampEnabled
-                    : defaultSettings.bpmRampEnabled,
-            bpmRampBars:
-                typeof stored.bpmRampBars === "number" &&
-                Number.isInteger(stored.bpmRampBars)
-                    ? Math.min(
-                          maxBpmRampBars,
-                          Math.max(minBpmRampBars, stored.bpmRampBars),
-                      )
-                    : defaultSettings.bpmRampBars,
-            bpmRampAmount:
-                typeof stored.bpmRampAmount === "number" &&
-                Number.isFinite(stored.bpmRampAmount)
-                    ? Math.min(
-                          maxBpmRampAmount,
-                          Math.max(
-                              minBpmRampAmount,
-                              Math.round(stored.bpmRampAmount),
-                          ),
-                      )
-                    : defaultSettings.bpmRampAmount,
-            subdivisionMode: Object.values(SubdivisionMode).includes(
-                stored.subdivisionMode as SubdivisionMode,
-            )
-                ? (stored.subdivisionMode as SubdivisionMode)
-                : stored.showSubdivisions === true
-                  ? SubdivisionMode.Eighths
-                  : SubdivisionMode.Off,
-            timeSignature: Object.values(TimeSignature).includes(
-                stored.timeSignature as TimeSignature,
-            )
-                ? (stored.timeSignature as TimeSignature)
-                : migratedTimeSignature,
-            showNumbers:
-                typeof stored.showNumbers === "boolean"
-                    ? stored.showNumbers
-                    : defaultSettings.showNumbers,
-            countInEnabled:
-                typeof stored.countInEnabled === "boolean"
-                    ? stored.countInEnabled
-                    : defaultSettings.countInEnabled,
-            volume:
-                typeof stored.volume === "number" &&
-                Number.isFinite(stored.volume)
-                    ? Math.min(1, Math.max(0, stored.volume))
-                    : defaultSettings.volume,
-            soundOption: Object.values(SoundOption).includes(
-                stored.soundOption as SoundOption,
-            )
-                ? (stored.soundOption as SoundOption)
-                : defaultSettings.soundOption,
-            soundId: Object.values(SoundId).includes(stored.soundId as SoundId)
-                ? (stored.soundId as SoundId)
-                : defaultSettings.soundId,
-        };
+        return storedValue
+            ? normalizeMetronomeSettings(JSON.parse(storedValue))
+            : defaultSettings;
     } catch {
         return defaultSettings;
     }

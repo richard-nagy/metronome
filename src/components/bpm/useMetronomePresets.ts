@@ -1,11 +1,8 @@
-import {
-    SoundId,
-    SoundOption,
-    SubdivisionMode,
-    TimeSignature,
-} from "@/types/types";
 import { useEffect, useState } from "react";
-import type { MetronomeSettings } from "./useMetronomeSettings";
+import {
+    normalizeMetronomeSettings,
+    type MetronomeSettings,
+} from "./useMetronomeSettings";
 
 export interface MetronomePreset {
     id: string;
@@ -19,37 +16,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null;
 }
 
-function isMetronomePreset(value: unknown): value is MetronomePreset {
-    if (!isRecord(value) || !isRecord(value.settings)) {
-        return false;
+function parsePreset(value: unknown): MetronomePreset | null {
+    if (
+        !isRecord(value) ||
+        typeof value.id !== "string" ||
+        value.id.trim().length === 0 ||
+        typeof value.name !== "string" ||
+        value.name.trim().length === 0 ||
+        !isRecord(value.settings)
+    ) {
+        return null;
     }
 
-    const settings = value.settings;
-    return (
-        typeof value.id === "string" &&
-        typeof value.name === "string" &&
-        value.name.trim().length > 0 &&
-        typeof settings.bpm === "number" &&
-        Number.isFinite(settings.bpm) &&
-        typeof settings.bpmRampEnabled === "boolean" &&
-        Number.isInteger(settings.bpmRampBars) &&
-        typeof settings.bpmRampAmount === "number" &&
-        Number.isFinite(settings.bpmRampAmount) &&
-        Object.values(SubdivisionMode).includes(
-            settings.subdivisionMode as SubdivisionMode,
-        ) &&
-        Object.values(TimeSignature).includes(
-            settings.timeSignature as TimeSignature,
-        ) &&
-        typeof settings.showNumbers === "boolean" &&
-        typeof settings.countInEnabled === "boolean" &&
-        typeof settings.volume === "number" &&
-        Number.isFinite(settings.volume) &&
-        Object.values(SoundOption).includes(
-            settings.soundOption as SoundOption,
-        ) &&
-        Object.values(SoundId).includes(settings.soundId as SoundId)
-    );
+    return {
+        id: value.id,
+        name: value.name.trim(),
+        settings: normalizeMetronomeSettings(value.settings),
+    };
 }
 
 function loadPresets(): MetronomePreset[] {
@@ -64,7 +47,12 @@ function loadPresets(): MetronomePreset[] {
         }
 
         const stored: unknown = JSON.parse(storedValue);
-        return Array.isArray(stored) ? stored.filter(isMetronomePreset) : [];
+        return Array.isArray(stored)
+            ? stored.flatMap((preset) => {
+                  const parsedPreset = parsePreset(preset);
+                  return parsedPreset ? [parsedPreset] : [];
+              })
+            : [];
     } catch {
         return [];
     }

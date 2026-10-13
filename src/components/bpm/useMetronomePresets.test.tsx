@@ -87,4 +87,45 @@ describe("useMetronomePresets", () => {
             JSON.parse(localStorage.getItem(presetsStorageKey) ?? "[]"),
         ).toEqual([]);
     });
+
+    it("clamps invalid preset numbers and defaults invalid settings", () => {
+        localStorage.setItem(
+            presetsStorageKey,
+            JSON.stringify([
+                {
+                    id: "unsafe-preset",
+                    name: "Imported preset",
+                    settings: {
+                        bpm: 500,
+                        bpmRampEnabled: true,
+                        bpmRampBars: 0,
+                        bpmRampAmount: -100,
+                        subdivisionMode: "invalid",
+                        timeSignature: "invalid",
+                        showNumbers: true,
+                        countInEnabled: false,
+                        volume: 2,
+                        soundOption: "invalid",
+                        soundId: "invalid",
+                    },
+                },
+            ]),
+        );
+
+        mountPresets();
+
+        expect(presetsResult.presets[0]?.settings).toMatchObject({
+            bpm: 300,
+            bpmRampEnabled: true,
+            bpmRampBars: 1,
+            bpmRampAmount: -50,
+            subdivisionMode: SubdivisionMode.Off,
+            timeSignature: TimeSignature.FourFour,
+            showNumbers: true,
+            countInEnabled: false,
+            volume: 1,
+            soundOption: SoundOption.Full,
+            soundId: SoundId.Click,
+        });
+    });
 });
