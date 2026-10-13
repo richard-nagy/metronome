@@ -27,7 +27,6 @@ export function DisplaySettings({
                     </Label>
                     <Switch
                         id="show-numbers"
-                        className="h-6 w-11 sm:h-[1.15rem] sm:w-8"
                         checked={showNumbers}
                         onCheckedChange={onNumbersChange}
                     />
@@ -41,7 +40,6 @@ export function DisplaySettings({
                     </Label>
                     <Switch
                         id="count-in-enabled"
-                        className="h-6 w-11 sm:h-[1.15rem] sm:w-8"
                         checked={countInEnabled}
                         onCheckedChange={onCountInChange}
                     />

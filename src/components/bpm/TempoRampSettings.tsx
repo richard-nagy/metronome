@@ -62,7 +62,6 @@ export function TempoRampSettings({
                 </Label>
                 <Switch
                     id="bpm-ramp-enabled"
-                    className="h-6 w-11 sm:h-[1.15rem] sm:w-8"
                     checked={enabled}
                     disabled={isPlaybackActive}
                     onCheckedChange={onEnabledChange}
